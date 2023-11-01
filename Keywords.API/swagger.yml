@@ -1,0 +1,52 @@
+swagger: "2.0"
+info:
+  description: "Service responsible for handling videos keywords."
+  version: "1.0.0"
+  title: "Keywords Microservice"
+host: "localhost:7012"
+basePath: "/"
+tags:
+  - name: "keyword"
+    description: "Everything about your Pets"
+schemes:
+  - "http"
+paths:
+  /keyword/keywordId/{keywordId}:
+    get:
+      tags:
+        - "keyword"
+      summary: "Get a keyword by its id"
+      description: "Get a keyword by its id"
+      operationId: "GetKeyword"
+      parameters:
+        - name: keywordId
+          in: path
+          description: Keyword Id to get the keyword entity for
+          required: true
+          type: string
+          format: guid
+      responses:
+        200:
+          description: Keyword found
+          schema:
+            $ref: "#/definitions/Keyword"
+        404:
+          description: Keyword not found
+definitions:
+  Keyword:
+    type: object
+    properties:
+      Id:
+        type: string
+        format: guid
+        description: Id of the keyword
+      Content:
+        type: string
+        description: Keyword's content can be a word or a phrase
+      VideoId:
+        type: string
+        format: guid
+        description: Id of the video that the keyword belongs to
+      IsPublished:
+        type: boolean
+        description: States if the Keyword is available for users

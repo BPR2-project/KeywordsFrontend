@@ -1,14 +1,17 @@
+using Keywords.API.Client.Generated;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Keywords.Frontend.Data;
+using Keywords.Services;
+using Keywords.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddScoped<IKeywordClient>(_ => new KeywordClient()
+    {BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend")});
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
-
+builder.Services.AddScoped<IKeywordService, KeywordService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

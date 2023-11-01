@@ -6,4 +6,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Keywords.API\Keywords.API.csproj" />
+      <ProjectReference Include="..\Keywords.Services\Keywords.Services.csproj" />
+    </ItemGroup>
+
 </Project>

@@ -1,0 +1,26 @@
+﻿@page "/video"
+@using Keywords.Services.Interfaces
+@using Keywords.API.Client.Generated
+@inject IKeywordService _keywordService
+
+<PageTitle>Video</PageTitle>
+<p>@_keyword.Content</p>
+@code
+{
+    private Keyword _keyword;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Should probably get keywords by videoId?
+        Guid keywordId = Guid.NewGuid();
+        Guid videoId = Guid.NewGuid();
+        _keyword = new Keyword()
+        {
+            Content = "fantastisk",
+            Id = keywordId,
+            IsPublished = true,
+            VideoId = videoId
+        };
+    //_keyword = await _keywordService.GetKeywordAsync(keywordId);
+    }
+}
