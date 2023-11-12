@@ -1,0 +1,129 @@
+﻿swagger: "2.0"
+info:
+  description: "Service responsible for handling videos."
+  version: "1.0.0"
+  title: "Swap Videos Microservice"
+host: "swapvideosbackend.azurewebsites.net"
+basePath: "/"
+tags:
+  - name: "videos"
+    description: "Everything about videos"
+schemes:
+  - "http"
+paths:
+  /videos:
+    post:
+      tags:
+        - "video"
+      summary: "Get all videos paginated"
+      description: "Get all video paginated"
+      operationId: "GetAllVideos"
+      parameters:
+        - name: PaginatedVideosRequest
+          in: body
+          required: true
+          description: Contains pagination details
+          schema:
+            $ref: "#/definitions/PaginatedVideosRequest"
+      responses:
+        200:
+          description: Returns all videos paginated
+          schema:
+            $ref: "#/definitions/PaginatedVideosResponse"
+        400:
+          description: Bad request
+  /video/videoId/{videoId}:
+    get:
+      tags:
+        - "video"
+      summary: "Get a video by its id"
+      description: "Get a video by its id"
+      operationId: "GetVideo"
+      parameters:
+        - name: videoId
+          in: path
+          description: Video Id to get the video entity for
+          required: true
+          type: string
+          format: guid
+      responses:
+        200:
+          description: Video found
+          schema:
+            $ref: "#/definitions/Video"
+        404:
+          description: Video not found
+    put:
+      tags:
+        - "video"
+      summary: "Tag a video as indexed/not indexed"
+      description: "Tag a video as indexed/not indexed"
+      operationId: TagVideoAsIndexed
+      parameters:
+        - name: videoId
+          in: path
+          description: Video id
+          required: true
+          type: string
+          format: guid
+        - name: isIndexed
+          in: query
+          description: Bool to state whether the video is indexed or not
+          required: false
+          type: boolean
+      responses:
+        200:
+          description: Operation succeded
+          schema:
+            $ref: "#/definitions/Video"
+        404:
+          description: Video not found
+definitions:
+  Video:
+    type: object
+    properties:
+      Id:
+        type: string
+        format: guid
+        description: Id of the video
+      Name:
+        type: string
+        description: Video name/title
+      Description:
+        type: string
+        description: Video description
+      VideoLink:
+        type: string
+        description: Link to the video's blob storage
+      IsIndexed:
+        type: boolean
+        description: Modifier to show whether the video is indexed or not
+  PaginatedVideosRequest:
+    type: object
+    properties:
+      Size:
+        type: integer
+        description: Size of the page
+      Page:
+        type: integer
+        description: Page number
+  PaginatedVideosResponse:
+    type: object
+    properties:
+      Videos:
+        type: array
+        description: List of videos
+        items:
+          $ref: '#/definitions/Video'
+      SizeRequested:
+        type: integer
+        description: Size of the page that was requested
+      TotalAmount:
+        type: integer
+        description: Total number of videos retrieved
+      CurrentPage:
+        type: integer
+        description: Current page
+      TotalAmountOfPages:
+        type: integer
+        description: Total number of pages based on the specified size

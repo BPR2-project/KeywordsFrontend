@@ -1,17 +1,23 @@
 using Keywords.API.Client.Generated;
+using SwapVideos.API.Client.Generated;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Keywords.Services;
 using Keywords.Services.Interfaces;
+using SwapVideos.Services;
+using SwapVideos.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IKeywordClient>(_ => new KeywordClient()
     {BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend")});
+builder.Services.AddScoped<IVideoClient>(_ => new VideoClient()
+    {BaseUrl = builder.Configuration.GetConnectionString("videosbackend")});
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<IKeywordService, KeywordService>();
+builder.Services.AddScoped<ISwapVideoService, SwapVideoService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

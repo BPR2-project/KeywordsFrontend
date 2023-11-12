@@ -1,4 +1,4 @@
-﻿@page "/video"
+﻿@page "/video/{VideoId:guid}"
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
 @inject IKeywordService _keywordService
@@ -8,6 +8,8 @@
 @code
 {
     private Keyword _keyword;
+    [Parameter]
+    public Guid? VideoId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -21,6 +23,6 @@
             IsPublished = true,
             VideoId = videoId
         };
-    _keyword = await _keywordService.GetKeywordAsync(Guid.Parse("fe18bf77-10df-48fc-ad8f-bca30c075896"));
+    //_keyword = await _keywordService.GetKeywordAsync(Guid.Parse("fe18bf77-10df-48fc-ad8f-bca30c075896"));
     }
 }

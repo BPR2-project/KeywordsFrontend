@@ -1,9 +1,85 @@
 ﻿@page "/"
+@page "/{PageNumber:int}"
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
 
-EZ bachelor
+    <div class="d-flex justify-content-center">
+        <div class="p-5 d-flex d-flex justify-content-around" style="width: 70%;">
+            @if (page_videos.Any())
+            {
+            @for (var i = 0; i < size; i++)
+            {
+                <div>
+                <a href="/video/@page_videos[i].Id">@page_videos[i].Description</a>
+                </div>
+            }
+            }
+        </div>
+    </div>
 
-<SurveyPrompt Title="How is Blazor working for you?"/>
+
+<div class="d-flex justify-content-center">
+    @for (var i = 1; i <= page; i++)
+    {
+        <span><a href="/@i">@i</a>|</span>
+    }
+</div>
+
+
+@code {
+    private IList<SwapVideos.API.Client.Generated.Video> _videos;
+    private int page = 2;
+    private int size = 2;
+    [Parameter]
+    public int PageNumber { get; set; }
+
+    private IList<SwapVideos.API.Client.Generated.Video> page_videos;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (PageNumber < 1) PageNumber = 1;
+        Guid videoId = new Guid("012da148-e78a-4c34-904f-5e012689074a");
+        page_videos = new List<SwapVideos.API.Client.Generated.Video>();
+        _videos = new List<SwapVideos.API.Client.Generated.Video>
+        {
+            new SwapVideos.API.Client.Generated.Video()
+            {
+                Description = "Amazing video you wanna watch!",
+                Id = videoId,
+                IsIndexed = false,
+                Name = "Lesson 1",
+                VideoLink = "je0132jeh9013j"
+            },
+            new SwapVideos.API.Client.Generated.Video()
+            {
+                Description = "Crazy video! I can't believe it!",
+                Id = videoId,
+                IsIndexed = false,
+                Name = "Lesson 2",
+                VideoLink = "nfiowefenflwef"
+            }
+            ,
+            new SwapVideos.API.Client.Generated.Video()
+            {
+                Description = "OH my GOD! You have to watch this NOW!",
+                Id = videoId,
+                IsIndexed = false,
+                Name = "Lesson 3",
+                VideoLink = "tjukiykukjyukj"
+            },
+            new SwapVideos.API.Client.Generated.Video()
+            {
+                Description = "Yes! This is what you've been waiting for!",
+                Id = videoId,
+                IsIndexed = false,
+                Name = "Lesson 4",
+                VideoLink = "mgprmegpfomfewf"
+            }
+        };
+        if (PageNumber == 1)
+            page_videos = _videos.Take(2).ToList();
+        if (PageNumber == 2)
+            page_videos = _videos.Skip(2).Take(2).ToList();
+    }
+}
