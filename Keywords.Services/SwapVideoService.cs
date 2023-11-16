@@ -1,7 +1,7 @@
-﻿using SwapVideos.API.Client.Generated;
-using SwapVideos.Services.Interfaces;
+﻿using Keywords.Services.Interfaces;
+using SwapVideos.API.Client.Generated;
 
-namespace SwapVideos.Services;
+namespace Keywords.Services;
 
 public class SwapVideoService: ISwapVideoService
 {

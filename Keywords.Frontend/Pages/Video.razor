@@ -1,32 +1,41 @@
 ﻿@page "/video/{VideoId:guid}"
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
-@using SwapVideos.Services.Interfaces
 @inject IKeywordService _keywordService
 @inject ISwapVideoService _videoService
+@inject IIndexerService _indexerService
 
 <PageTitle>Video</PageTitle>
 @if (_video != null)
 {
     <h1>@_video.Name</h1>
-    <h2>@_video.Description</h2>
+    <p>Description: @_video.Description</p>
+    @if (_video.IsIndexed.Value)
+    {
+        <p>Indexed</p>
+        <button type="button" class="btn btn-lg btn-secondary" disabled>Index</button>
+        <p>Keywords:</p>
+        @if (_keywords != null)
+        {
+            @foreach (var keyword in _keywords)
+            {
+                <p>@keyword.Content</p>
+            }
+        }
+    }
+    else
+    {
+        <p>Not indexed</p>
+        <button type="button" class="btn btn-lg btn-primary" @onclick="IndexVideo">Index</button>
+    }
 }
 else
 {
     <h1>Loading</h1>
 }
-@if (_keywords != null)
-{
-    @foreach (var _keyword in _keywords)
-    {
-        <p>@_keyword.Content</p>
-    }
-    
-}
 
 @code
 {
-    private Keyword _keyword;
     [Parameter]
     public Guid VideoId { get; set; }
     private SwapVideos.API.Client.Generated.Video _video;
@@ -38,44 +47,26 @@ else
     protected override async Task OnInitializedAsync()
     {
         _video = await _videoService.GetVideoAsync(VideoId);
-
         if (_video.IsIndexed != null && _video.IsIndexed.Value)
+            await GetAllKeywordsByVideoIdAsync();
+    }
+
+    private async Task GetAllKeywordsByVideoIdAsync()
+    {
+        var keywordsRequest = new PaginatedKeywordsRequest()
         {
-            var keywordsRequest = new PaginatedKeywordsRequest()
-            {
-                Page = 0,
-                Size = 0,
-                VideoId = VideoId
-            };
-            _keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-            
-            _keywordsPage = _keywordsResponse.CurrentPage;
-            _keywordsSize = _keywordsResponse.SizeRequested;
-            _keywords = _keywordsResponse.Keywords;
-        }
-        /*
-        // Should probably get keywords by videoId?
-        Guid keywordId = Guid.NewGuid();
-        _keyword = new Keyword()
-        {
-            Content = "fantastisk",
-            Id = keywordId,
-            IsPublished = true,
+            Page = 0,
+            Size = 0,
             VideoId = VideoId
         };
+        _keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+        _keywordsPage = _keywordsResponse.CurrentPage;
+        _keywordsSize = _keywordsResponse.SizeRequested;
+        _keywords = _keywordsResponse.Keywords;
+    }
 
-        _video = new SwapVideos.API.Client.Generated.Video()
-        {
-            Description = "Very nice!",
-            Id = VideoId,
-            IsIndexed = false,
-            Name = "Lesson 1",
-            VideoLink = "https://swapvideostorage.blob.core.windows.net/swapvideocontainer/" +
-                        "DK%20M04-T01-L01.mp4?sp=r&st=2023-11-04T13:02:28Z&se=2024-02-01T21:02:28Z" +
-                        "&spr=https&sv=2022-11-02&sr=b&sig=Dsq7irKWHZq15qELj73UbbIVezZDAOwj5sS%2Br6FmT70%3D"
-        };
-        
-    //_keyword = await _keywordService.GetKeywordAsync(Guid.Parse("fe18bf77-10df-48fc-ad8f-bca30c075896"));
-        */
+    private async Task IndexVideo()
+    {
+        await _indexerService.IndexVideoAsync(_video.VideoLink, _video.Name, _video.Description);
     }
 }

@@ -21,5 +21,10 @@ public class KeywordService : IKeywordService
     {
         return await _keywordClient.GetAllKeywordsByVideoIdAsync(keywordsRequest);
     }
+
+    public async Task<Keyword> PublishKeywordAsync(Guid keywordId, bool? toBePublished)
+    {
+        return await _keywordClient.PublishKeywordAsync(keywordId, toBePublished);
+    }
    
 }

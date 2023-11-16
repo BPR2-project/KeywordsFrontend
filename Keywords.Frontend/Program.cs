@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Keywords.Services;
 using Keywords.Services.Interfaces;
-using SwapVideos.Services;
-using SwapVideos.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
