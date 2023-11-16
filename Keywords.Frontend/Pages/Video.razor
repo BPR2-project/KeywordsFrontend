@@ -2,27 +2,71 @@
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
 @inject IKeywordService _keywordService
+@inject ISwapVideoService _videoService
+@inject IIndexerService _indexerService
 
 <PageTitle>Video</PageTitle>
-<p>@_keyword.Content</p>
+@if (_video != null)
+{
+    <h1>@_video.Name</h1>
+    <p>Description: @_video.Description</p>
+    @if (_video.IsIndexed.Value)
+    {
+        <p>Indexed</p>
+        <button type="button" class="btn btn-lg btn-secondary" disabled>Index</button>
+        <p>Keywords:</p>
+        @if (_keywords != null)
+        {
+            @foreach (var keyword in _keywords)
+            {
+                <p>@keyword.Content</p>
+            }
+        }
+    }
+    else
+    {
+        <p>Not indexed</p>
+        <button type="button" class="btn btn-lg btn-primary" @onclick="IndexVideo">Index</button>
+    }
+}
+else
+{
+    <h1>Loading</h1>
+}
+
 @code
 {
-    private Keyword _keyword;
     [Parameter]
-    public Guid? VideoId { get; set; }
+    public Guid VideoId { get; set; }
+    private SwapVideos.API.Client.Generated.Video _video;
+    private PaginatedKeywordsResponse _keywordsResponse;
+    private int? _keywordsPage;
+    private int? _keywordsSize;
+    private IList<Keyword> _keywords;
 
     protected override async Task OnInitializedAsync()
     {
-        // Should probably get keywords by videoId?
-        Guid keywordId = Guid.NewGuid();
-        Guid videoId = Guid.NewGuid();
-        _keyword = new Keyword()
+        _video = await _videoService.GetVideoAsync(VideoId);
+        if (_video.IsIndexed != null && _video.IsIndexed.Value)
+            await GetAllKeywordsByVideoIdAsync();
+    }
+
+    private async Task GetAllKeywordsByVideoIdAsync()
+    {
+        var keywordsRequest = new PaginatedKeywordsRequest()
         {
-            Content = "fantastisk",
-            Id = keywordId,
-            IsPublished = true,
-            VideoId = videoId
+            Page = 0,
+            Size = 0,
+            VideoId = VideoId
         };
-    //_keyword = await _keywordService.GetKeywordAsync(Guid.Parse("fe18bf77-10df-48fc-ad8f-bca30c075896"));
+        _keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+        _keywordsPage = _keywordsResponse.CurrentPage;
+        _keywordsSize = _keywordsResponse.SizeRequested;
+        _keywords = _keywordsResponse.Keywords;
+    }
+
+    private async Task IndexVideo()
+    {
+        await _indexerService.IndexVideoAsync(_video.VideoLink, _video.Name, _video.Description);
     }
 }

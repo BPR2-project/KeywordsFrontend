@@ -1,6 +1,6 @@
 ﻿using SwapVideos.API.Client.Generated;
 
-namespace SwapVideos.Services.Interfaces;
+namespace Keywords.Services.Interfaces;
 
 public interface ISwapVideoService
 {
