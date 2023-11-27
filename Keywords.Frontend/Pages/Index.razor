@@ -1,47 +1,57 @@
 ﻿@page "/"
-@page "/{PageNumber:int}"
+@using Radzen.Blazor
+@using Radzen
+@using Keywords.Services.Interfaces
 
-<PageTitle>Index</PageTitle>
+@inject ISwapVideoService _videoService
+@inject NavigationManager Navigation
 
+<PageTitle>Videos</PageTitle>
 
-    <div class="d-flex justify-content-center">
-        <div class="p-5 d-flex d-flex justify-content-around" style="width: 70%;">
-            @if (page_videos.Any())
-            {
-            @for (var i = 0; i < size; i++)
-            {
-                <div>
-                <a href="/video/@page_videos[i].Id">@page_videos[i].Description</a>
-                </div>
-            }
-            }
-        </div>
-    </div>
+<RadzenDataList WrapItems="true" AllowPaging="false" Data="@videos" TItem="SwapVideos.API.Client.Generated.Video">
+    <Template Context="video">
+        <RadzenCard Style="width:300px; cursor: pointer;" @onclick="() => ViewVideoDetails(video.Id)">
+            <RadzenStack Orientation="Orientation.Vertical">
+                    <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-2 rz-my-0">Name</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1"><b>@(video?.Name)</b></RadzenText>
+                    <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-4 rz-mb-0">Description</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1"><b>@(video?.Description)</b></RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    </Template>
+</RadzenDataList>
 
-
-<div class="d-flex justify-content-center">
-    @for (var i = 1; i <= page; i++)
-    {
-        <span><a href="/@i">@i</a>|</span>
-    }
-</div>
-
+<RadzenPager ShowPagingSummary="true" PagingSummaryFormat="@pagingSummaryFormat" HorizontalAlign="HorizontalAlign.Right" Count="count" PageSize="@pageSize" PageNumbersCount="5" PageChanged="@PageChanged" />
 
 @code {
-    private IList<SwapVideos.API.Client.Generated.Video> _videos;
-    private int page = 2;
-    private int size = 2;
-    [Parameter]
-    public int PageNumber { get; set; }
+    string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} records)";
+    int pageSize = 2;
+    int count;
+    IEnumerable<SwapVideos.API.Client.Generated.Video> videos;
 
-    private IList<SwapVideos.API.Client.Generated.Video> page_videos;
-
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        if (PageNumber < 1) PageNumber = 1;
+        await base.OnInitializedAsync();
+        
+        videos = await GetAllVideosAsync(0, pageSize);
+        count = videos.Count();
+    }
+
+    private async void PageChanged(PagerEventArgs args)
+    {
+        videos = await GetAllVideosAsync(args.Skip, args.Top);
+    }
+
+    private void ViewVideoDetails(Guid? videoId)
+    {
+        Navigation.NavigateTo($"/video/{videoId}");
+    }
+
+    private async Task<IList<SwapVideos.API.Client.Generated.Video>> GetAllVideosAsync(int? page, int size)
+    {
+        //return await _videoService.GetAllVideosAsync(page, size);
         Guid videoId = new Guid("212ced62-0fda-4d02-b4e9-6d9b76122778");
-        page_videos = new List<SwapVideos.API.Client.Generated.Video>();
-        _videos = new List<SwapVideos.API.Client.Generated.Video>
+        var _videos = new List<SwapVideos.API.Client.Generated.Video>
         {
             new SwapVideos.API.Client.Generated.Video()
             {
@@ -77,9 +87,6 @@
                 VideoLink = "mgprmegpfomfewf"
             }
         };
-        if (PageNumber == 1)
-            page_videos = _videos.Take(2).ToList();
-        if (PageNumber == 2)
-            page_videos = _videos.Skip(2).Take(2).ToList();
+        return _videos;
     }
 }
