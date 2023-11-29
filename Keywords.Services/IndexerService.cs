@@ -1,8 +1,9 @@
 ﻿using Keywords.API.Client.Generated;
+using Keywords.Services.Interfaces;
 
 namespace Keywords.Services;
 
-public class IndexerService
+public class IndexerService : IIndexerService
 {
     private readonly IIndexerClient _indexerClient;
 
