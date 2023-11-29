@@ -22,5 +22,4 @@ public class IndexerService : IIndexerService
     {
         return await _indexerClient.GetIndexerResponseAsync(videoId);
     }
-    
 }
