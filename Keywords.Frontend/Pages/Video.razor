@@ -1,4 +1,5 @@
 ﻿@page "/video/{VideoId:guid}"
+@page "/video/{VideoId:guid}/{Page:int}"
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
 @inject IKeywordService _keywordService
@@ -10,18 +11,34 @@
 {
     <h1>@_video.Name</h1>
     <p>Description: @_video.Description</p>
-    @if (_video.IsIndexed.Value)
+    @if (_keywords != null)
     {
         <p>Indexed</p>
-        <button type="button" class="btn btn-lg btn-secondary" disabled>Index</button>
         <p>Keywords:</p>
-        @if (_keywords != null)
+        @foreach (var keyword in _keywords)
         {
-            @foreach (var keyword in _keywords)
-            {
-                <p>@keyword.Content</p>
-            }
+            <p>@keyword.Content</p>
         }
+        
+        <div class="d-flex justify-content-center">
+            @for (var i = 1; i <= _totalPages; i++)
+            {
+                @if (i == Page)
+                {
+                    <span>@i|</span>
+                }
+                else
+                {
+                    <span><a href="/video/@VideoId/@i">@i</a>|</span>   
+                }
+            }
+        </div>
+    }
+    else if (_indexerResponse != null)
+    {
+        <h3>Indexing</h3>
+        <p><strong>@_indexerResponse.State</strong></p>
+        <p>@_indexerResponse.ProcessingProgress</p>
     }
     else
     {
@@ -38,35 +55,77 @@ else
 {
     [Parameter]
     public Guid VideoId { get; set; }
-    private SwapVideos.API.Client.Generated.Video _video;
-    private PaginatedKeywordsResponse _keywordsResponse;
-    private int? _keywordsPage;
-    private int? _keywordsSize;
-    private IList<Keyword> _keywords;
+    [Parameter]
+    public int? Page { get; set; }
+    
+    private SwapVideos.API.Client.Generated.Video? _video;
+    IndexerResponse? _indexerResponse;
+    private int? _totalPages;
+    private IList<Keyword>? _keywords;
 
-    protected override async Task OnInitializedAsync()
+    private async Task GetKeywordsAsync()
     {
-        _video = await _videoService.GetVideoAsync(VideoId);
-        if (_video.IsIndexed != null && _video.IsIndexed.Value)
-            await GetAllKeywordsByVideoIdAsync();
-    }
-
-    private async Task GetAllKeywordsByVideoIdAsync()
-    {
-        var keywordsRequest = new PaginatedKeywordsRequest()
+        var keywordsRequest = new PaginatedKeywordsRequest
         {
-            Page = 0,
-            Size = 0,
+            Page = Page > 1 ? Page - 1 : 0,
+            Size = 10,
             VideoId = VideoId
         };
-        _keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-        _keywordsPage = _keywordsResponse.CurrentPage;
-        _keywordsSize = _keywordsResponse.SizeRequested;
-        _keywords = _keywordsResponse.Keywords;
+        try
+        {
+            var keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+            Page = keywordsResponse.CurrentPage + 1;
+            _totalPages = keywordsResponse.TotalAmountOfPages;
+            _keywords = keywordsResponse.Keywords;
+        }
+        catch (ApiException e) when(e.StatusCode == 404)
+        {
+            try
+            {
+                _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
+            }
+            catch (ApiException ex) when(ex.StatusCode == 404)
+            {
+                // Ignored
+            }
+        }
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        _video = await _videoService.GetVideoAsync(VideoId);
+        await GetKeywordsAsync();
+
+        if (_keywords != null || _indexerResponse == null)
+        {
+            return;
+        }
+
+        await InvokeAsync(StateHasChanged);
+        using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        while (await periodicTimer.WaitForNextTickAsync())
+        {
+            _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
+            if (_indexerResponse.State is IndexerResponseState.Succeeded)
+            {
+                await GetKeywordsAsync();
+                await InvokeAsync(StateHasChanged);
+                break;
+            }
+
+            await InvokeAsync(StateHasChanged);
+            if (_indexerResponse.State is IndexerResponseState.Failed)
+            {
+                break;
+            }
+        }
     }
 
     private async Task IndexVideo()
     {
-        await _indexerService.IndexVideoAsync(_video.VideoLink, _video.Name, _video.Description);
+        if (_video?.Id != null)
+        {
+            await _indexerService.IndexVideoAsync(_video.Id.Value, _video.VideoLink);
+        }
     }
 }

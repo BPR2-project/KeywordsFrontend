@@ -544,27 +544,27 @@ namespace Keywords.API.Client.Generated
     public partial interface IIndexerClient
     {
         /// <summary>
-        /// Get a ocr list of the indexed video
+        /// Get a keyword list of the indexed video
         /// </summary>
         /// <remarks>
-        /// Get a ocr list of the indexed video
+        /// Get a keyword list of the indexed video
         /// </remarks>
         /// <param name="videoId">Video Id to get the video ocr for</param>
         /// <returns>Ocr video found</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Video>> GetOcrListAsync(string videoId);
+        System.Threading.Tasks.Task<IndexerResponse> GetIndexerResponseAsync(System.Guid videoId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get a ocr list of the indexed video
+        /// Get a keyword list of the indexed video
         /// </summary>
         /// <remarks>
-        /// Get a ocr list of the indexed video
+        /// Get a keyword list of the indexed video
         /// </remarks>
         /// <param name="videoId">Video Id to get the video ocr for</param>
         /// <returns>Ocr video found</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Video>> GetOcrListAsync(string videoId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<IndexerResponse> GetIndexerResponseAsync(System.Guid videoId, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// Index a video
@@ -572,12 +572,11 @@ namespace Keywords.API.Client.Generated
         /// <remarks>
         /// Index a video
         /// </remarks>
+        /// <param name="videoId">Video id to index</param>
         /// <param name="url">Video url to index</param>
-        /// <param name="name">Video name to index</param>
-        /// <param name="description">Video description to index</param>
-        /// <returns>Video indexed</returns>
+        /// <returns>Video index started</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<RequestVideoIndexResponse> IndexVideoAsync(string url, string name, string description);
+        System.Threading.Tasks.Task IndexVideoAsync(System.Guid videoId, string url);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -586,12 +585,11 @@ namespace Keywords.API.Client.Generated
         /// <remarks>
         /// Index a video
         /// </remarks>
+        /// <param name="videoId">Video id to index</param>
         /// <param name="url">Video url to index</param>
-        /// <param name="name">Video name to index</param>
-        /// <param name="description">Video description to index</param>
-        /// <returns>Video indexed</returns>
+        /// <returns>Video index started</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<RequestVideoIndexResponse> IndexVideoAsync(string url, string name, string description, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task IndexVideoAsync(System.Guid videoId, string url, System.Threading.CancellationToken cancellationToken);
 
     }
 
@@ -627,38 +625,37 @@ namespace Keywords.API.Client.Generated
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
         /// <summary>
-        /// Get a ocr list of the indexed video
+        /// Get a keyword list of the indexed video
         /// </summary>
         /// <remarks>
-        /// Get a ocr list of the indexed video
+        /// Get a keyword list of the indexed video
         /// </remarks>
         /// <param name="videoId">Video Id to get the video ocr for</param>
         /// <returns>Ocr video found</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Video>> GetOcrListAsync(string videoId)
+        public virtual System.Threading.Tasks.Task<IndexerResponse> GetIndexerResponseAsync(System.Guid videoId)
         {
-            return GetOcrListAsync(videoId, System.Threading.CancellationToken.None);
+            return GetIndexerResponseAsync(videoId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get a ocr list of the indexed video
+        /// Get a keyword list of the indexed video
         /// </summary>
         /// <remarks>
-        /// Get a ocr list of the indexed video
+        /// Get a keyword list of the indexed video
         /// </remarks>
         /// <param name="videoId">Video Id to get the video ocr for</param>
         /// <returns>Ocr video found</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<Video>> GetOcrListAsync(string videoId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<IndexerResponse> GetIndexerResponseAsync(System.Guid videoId, System.Threading.CancellationToken cancellationToken)
         {
             if (videoId == null)
                 throw new System.ArgumentNullException("videoId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/indexer?");
-            urlBuilder_.Append(System.Uri.EscapeDataString("videoId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(videoId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
-            urlBuilder_.Length--;
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/indexer/{videoId}");
+            urlBuilder_.Replace("{videoId}", System.Uri.EscapeDataString(ConvertToString(videoId, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = new System.Net.Http.HttpClient();
             var disposeClient_ = true;
@@ -692,7 +689,7 @@ namespace Keywords.API.Client.Generated
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<Video>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<IndexerResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -731,14 +728,13 @@ namespace Keywords.API.Client.Generated
         /// <remarks>
         /// Index a video
         /// </remarks>
+        /// <param name="videoId">Video id to index</param>
         /// <param name="url">Video url to index</param>
-        /// <param name="name">Video name to index</param>
-        /// <param name="description">Video description to index</param>
-        /// <returns>Video indexed</returns>
+        /// <returns>Video index started</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<RequestVideoIndexResponse> IndexVideoAsync(string url, string name, string description)
+        public virtual System.Threading.Tasks.Task IndexVideoAsync(System.Guid videoId, string url)
         {
-            return IndexVideoAsync(url, name, description, System.Threading.CancellationToken.None);
+            return IndexVideoAsync(videoId, url, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -748,27 +744,22 @@ namespace Keywords.API.Client.Generated
         /// <remarks>
         /// Index a video
         /// </remarks>
+        /// <param name="videoId">Video id to index</param>
         /// <param name="url">Video url to index</param>
-        /// <param name="name">Video name to index</param>
-        /// <param name="description">Video description to index</param>
-        /// <returns>Video indexed</returns>
+        /// <returns>Video index started</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<RequestVideoIndexResponse> IndexVideoAsync(string url, string name, string description, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task IndexVideoAsync(System.Guid videoId, string url, System.Threading.CancellationToken cancellationToken)
         {
+            if (videoId == null)
+                throw new System.ArgumentNullException("videoId");
+
             if (url == null)
                 throw new System.ArgumentNullException("url");
 
-            if (name == null)
-                throw new System.ArgumentNullException("name");
-
-            if (description == null)
-                throw new System.ArgumentNullException("description");
-
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/indexer?");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/indexer/{videoId}?");
+            urlBuilder_.Replace("{videoId}", System.Uri.EscapeDataString(ConvertToString(videoId, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Append(System.Uri.EscapeDataString("url") + "=").Append(System.Uri.EscapeDataString(ConvertToString(url, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
-            urlBuilder_.Append(System.Uri.EscapeDataString("name") + "=").Append(System.Uri.EscapeDataString(ConvertToString(name, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
-            urlBuilder_.Append(System.Uri.EscapeDataString("description") + "=").Append(System.Uri.EscapeDataString(ConvertToString(description, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             urlBuilder_.Length--;
 
             var client_ = new System.Net.Http.HttpClient();
@@ -779,7 +770,6 @@ namespace Keywords.API.Client.Generated
                 {
                     request_.Content = new System.Net.Http.StringContent(string.Empty, System.Text.Encoding.UTF8, "application/json");
                     request_.Method = new System.Net.Http.HttpMethod("POST");
-                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -804,12 +794,7 @@ namespace Keywords.API.Client.Generated
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<RequestVideoIndexResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
-                            if (objectResponse_.Object == null)
-                            {
-                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
-                            }
-                            return objectResponse_.Object;
+                            return;
                         }
                         else
                         if (status_ == 404)
@@ -995,60 +980,6 @@ namespace Keywords.API.Client.Generated
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Ocr
-    {
-        [Newtonsoft.Json.JsonProperty("text", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Text { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("confidence", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public double? Confidence { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("language", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Language { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("instances", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.List<Instance> Instances { get; set; }
-
-        public string ToJson()
-        {
-
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-        public static Ocr FromJson(string data)
-        {
-
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<Ocr>(data, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Instance
-    {
-        [Newtonsoft.Json.JsonProperty("start", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Start { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("end", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string End { get; set; }
-
-        public string ToJson()
-        {
-
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-        public static Instance FromJson(string data)
-        {
-
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<Instance>(data, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class PaginatedKeywordsRequest
     {
         /// <summary>
@@ -1133,40 +1064,17 @@ namespace Keywords.API.Client.Generated
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Insights
+    public partial class IndexerResponse
     {
-        [Newtonsoft.Json.JsonProperty("ocr", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.List<Ocr> Ocr { get; set; }
-
-        public string ToJson()
-        {
-
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-        public static Insights FromJson(string data)
-        {
-
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<Insights>(data, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class Video
-    {
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Id { get; set; }
-
         [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string State { get; set; }
+        [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+        public IndexerResponseState? State { get; set; }
 
         [Newtonsoft.Json.JsonProperty("processingProgress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string ProcessingProgress { get; set; }
 
-        [Newtonsoft.Json.JsonProperty("insights", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public Insights Insights { get; set; }
+        [Newtonsoft.Json.JsonProperty("keywords", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.List<Keyword> Keywords { get; set; }
 
         public string ToJson()
         {
@@ -1174,111 +1082,30 @@ namespace Keywords.API.Client.Generated
             return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
 
         }
-        public static Video FromJson(string data)
+        public static IndexerResponse FromJson(string data)
         {
 
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<Video>(data, new Newtonsoft.Json.JsonSerializerSettings());
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<IndexerResponse>(data, new Newtonsoft.Json.JsonSerializerSettings());
 
         }
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class VideoIndexerResponse
+    public enum IndexerResponseState
     {
-        [Newtonsoft.Json.JsonProperty("videos", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.List<Video> Videos { get; set; }
 
-        public string ToJson()
-        {
+        [System.Runtime.Serialization.EnumMember(Value = @"Indexing")]
+        Indexing = 0,
 
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        [System.Runtime.Serialization.EnumMember(Value = @"ExtractingKeyPhrases")]
+        ExtractingKeyPhrases = 1,
 
-        }
-        public static VideoIndexerResponse FromJson(string data)
-        {
+        [System.Runtime.Serialization.EnumMember(Value = @"Failed")]
+        Failed = 2,
 
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<VideoIndexerResponse>(data, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class IndexInProgress
-    {
-        [Newtonsoft.Json.JsonProperty("errorType", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string ErrorType { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("message", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Message { get; set; }
-
-        public string ToJson()
-        {
-
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-        public static IndexInProgress FromJson(string data)
-        {
-
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<IndexInProgress>(data, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class IndexVideoReceipt
-    {
-        [Newtonsoft.Json.JsonProperty("accountId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string AccountId { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Id { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Description { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string State { get; set; }
-
-        public string ToJson()
-        {
-
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-        public static IndexVideoReceipt FromJson(string data)
-        {
-
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<IndexVideoReceipt>(data, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class RequestVideoIndexResponse
-    {
-        [Newtonsoft.Json.JsonProperty("receipt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public IndexVideoReceipt Receipt { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("indexInProgress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public IndexInProgress IndexInProgress { get; set; }
-
-        public string ToJson()
-        {
-
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
-        public static RequestVideoIndexResponse FromJson(string data)
-        {
-
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<RequestVideoIndexResponse>(data, new Newtonsoft.Json.JsonSerializerSettings());
-
-        }
+        [System.Runtime.Serialization.EnumMember(Value = @"Succeeded")]
+        Succeeded = 3,
 
     }
 
