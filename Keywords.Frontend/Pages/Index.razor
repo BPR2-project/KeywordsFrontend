@@ -22,9 +22,8 @@
 </RadzenDataList>
 
 <RadzenPager ShowPagingSummary="true" PagingSummaryFormat="@pagingSummaryFormat" HorizontalAlign="HorizontalAlign.Right" Count="count" PageSize="@pageSize" PageNumbersCount="5" PageChanged="@PageChanged" />
-
 @code {
-    string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} records)";
+    string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} videos)";
     int pageSize = 2;
     int count;
     IEnumerable<SwapVideos.API.Client.Generated.Video> videos;
@@ -34,12 +33,12 @@
         await base.OnInitializedAsync();
         
         videos = await GetAllVideosAsync(0, pageSize);
-        count = videos.Count();
     }
 
     private async void PageChanged(PagerEventArgs args)
     {
-        videos = await GetAllVideosAsync(args.Skip, args.Top);
+        videos = await GetAllVideosAsync(args.PageIndex, args.Top);
+        await InvokeAsync(StateHasChanged);
     }
 
     private void ViewVideoDetails(Guid? videoId)
@@ -47,46 +46,10 @@
         Navigation.NavigateTo($"/video/{videoId}");
     }
 
-    private async Task<IList<SwapVideos.API.Client.Generated.Video>> GetAllVideosAsync(int? page, int size)
+    private async Task<IEnumerable<SwapVideos.API.Client.Generated.Video>> GetAllVideosAsync(int? page, int size)
     {
-        //return await _videoService.GetAllVideosAsync(page, size);
-        Guid videoId = new Guid("212ced62-0fda-4d02-b4e9-6d9b76122778");
-        var _videos = new List<SwapVideos.API.Client.Generated.Video>
-        {
-            new SwapVideos.API.Client.Generated.Video()
-            {
-                Description = "Amazing video you wanna watch!",
-                Id = videoId,
-                IsIndexed = false,
-                Name = "Lesson 1",
-                VideoLink = "je0132jeh9013j"
-            },
-            new SwapVideos.API.Client.Generated.Video()
-            {
-                Description = "Crazy video! I can't believe it!",
-                Id = videoId,
-                IsIndexed = false,
-                Name = "Lesson 2",
-                VideoLink = "nfiowefenflwef"
-            }
-            ,
-            new SwapVideos.API.Client.Generated.Video()
-            {
-                Description = "OH my GOD! You have to watch this NOW!",
-                Id = videoId,
-                IsIndexed = false,
-                Name = "Lesson 3",
-                VideoLink = "tjukiykukjyukj"
-            },
-            new SwapVideos.API.Client.Generated.Video()
-            {
-                Description = "Yes! This is what you've been waiting for!",
-                Id = videoId,
-                IsIndexed = false,
-                Name = "Lesson 4",
-                VideoLink = "mgprmegpfomfewf"
-            }
-        };
-        return _videos;
+        var response = await _videoService.GetVideoAsync(page, size);
+        count = response.TotalAmount ?? 0;
+        return response.Videos;
     }
 }

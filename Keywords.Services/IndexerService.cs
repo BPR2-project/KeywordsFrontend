@@ -1,5 +1,6 @@
 ﻿using Keywords.API.Client.Generated;
 using Keywords.Services.Interfaces;
+using SwapVideos.API.Client.Generated;
 
 namespace Keywords.Services;
 
@@ -12,15 +13,13 @@ public class IndexerService : IIndexerService
         _indexerClient = indexerClient;
     }
 
-    public async Task<RequestVideoIndexResponse> IndexVideoAsync(string url, string name, string description)
+    public async Task IndexVideoAsync(Guid videoId, string url)
     {
-        return await _indexerClient.IndexVideoAsync(url, name, description);
+        await _indexerClient.IndexVideoAsync(videoId, url);
     }
 
-    public async Task<ICollection<Video>> GetOcrListAsync(string videoId)
+    public async Task<IndexerResponse> GetIndexerResponseAsync(Guid videoId)
     {
-        return await _indexerClient.GetOcrListAsync(videoId);
+        return await _indexerClient.GetIndexerResponseAsync(videoId);
     }
-    
-    
 }

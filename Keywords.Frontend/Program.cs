@@ -7,18 +7,19 @@ using Keywords.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<IKeywordClient>(_ => new KeywordClient()
-    {BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend")});
-builder.Services.AddScoped<IVideoClient>(_ => new VideoClient()
-    {BaseUrl = builder.Configuration.GetConnectionString("videosbackend")});
-builder.Services.AddScoped<IIndexerClient>(_ => new IndexerClient()
-    {BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend")});
+builder.Services.AddScoped<IKeywordClient>(_ => new KeywordClient
+    { BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend") });
+builder.Services.AddScoped<IIndexerClient>(_ => new IndexerClient
+    { BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend") });
+builder.Services.AddScoped<IVideoClient>(_ => new VideoClient
+    { BaseUrl = builder.Configuration.GetConnectionString("videosbackend") });
+
 // Add services to the container.
+builder.Services.AddScoped<IKeywordService, KeywordService>();
+builder.Services.AddScoped<IIndexerService, IndexerService>();
+builder.Services.AddScoped<ISwapVideoService, SwapVideoService>();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddScoped<IKeywordService, KeywordService>();
-builder.Services.AddScoped<ISwapVideoService, SwapVideoService>();
-builder.Services.AddScoped<IIndexerService, IndexerService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

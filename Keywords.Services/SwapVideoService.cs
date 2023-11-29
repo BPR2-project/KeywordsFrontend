@@ -17,15 +17,14 @@ public class SwapVideoService: ISwapVideoService
         return await _videoClient.GetVideoAsync(videoId);
     }
     
-    public async Task<IList<Video>> GetAllVideosAsync(int? page, int size)
+    public async Task<PaginatedVideosResponse> GetVideoAsync(int? page, int size)
     {
         var paginatedVideosRequest = new PaginatedVideosRequest()
         {
             Page = page,
             Size = size
         };
-        var response = await _videoClient.GetAllVideosAsync(paginatedVideosRequest);
-        return response.Videos.ToList();
+        return await _videoClient.GetAllVideosAsync(paginatedVideosRequest);
     }
 
     public async Task<Video> TagVideoAsIndexedAsync(Guid videoId, bool isIndexed)
