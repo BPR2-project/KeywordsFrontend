@@ -5,6 +5,9 @@
 @inject IKeywordService _keywordService
 @inject ISwapVideoService _videoService
 @inject IIndexerService _indexerService
+@using Radzen
+@using Radzen.Blazor
+@using System.Drawing
 
 <PageTitle>Video</PageTitle>
 @if (_video != null)
@@ -36,13 +39,13 @@
     }
     else if (_indexerResponse != null)
     {
-        <h3>Indexing</h3>
-        <p><strong>@_indexerResponse.State</strong></p>
-        <p>@_indexerResponse.ProcessingProgress</p>
+        <h3>Processing video</h3>
+        <p><strong>Status: @_indexerResponse.State</strong></p>
+        <RadzenProgressBarCircular Style="height: 100px; width: 100px;" ProgressBarStyle="ProgressBarStyle.Secondary" @bind-Value="@_progress" Mode="ProgressBarMode.Indeterminate" />
+
     }
     else
     {
-        <p>Not indexed</p>
         <button type="button" class="btn btn-lg btn-primary" @onclick="IndexVideo">Index</button>
     }
 }
@@ -60,6 +63,7 @@ else
     
     private SwapVideos.API.Client.Generated.Video? _video;
     IndexerResponse? _indexerResponse;
+    private double _progress;
     private int? _totalPages;
     private IList<Keyword>? _keywords;
 
@@ -83,6 +87,7 @@ else
             try
             {
                 _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
+                _progress = ToDouble(_indexerResponse.ProcessingProgress);
             }
             catch (ApiException ex) when(ex.StatusCode == 404)
             {
@@ -92,6 +97,11 @@ else
     }
     
     protected override async Task OnParametersSetAsync()
+    {
+        await IndexerTrigger();
+    }
+
+    private async Task IndexerTrigger()
     {
         _video = await _videoService.GetVideoAsync(VideoId);
         await GetKeywordsAsync();
@@ -106,6 +116,7 @@ else
         while (await periodicTimer.WaitForNextTickAsync())
         {
             _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
+            _progress = ToDouble(_indexerResponse.ProcessingProgress);
             if (_indexerResponse.State is IndexerResponseState.Succeeded)
             {
                 await GetKeywordsAsync();
@@ -126,6 +137,17 @@ else
         if (_video?.Id != null)
         {
             await _indexerService.IndexVideoAsync(_video.Id.Value, _video.VideoLink);
+            await IndexerTrigger();
         }
+    }
+
+    private static double ToDouble(string? progress)
+    {
+        var toConvert = progress?.Trim('%');
+        if (double.TryParse(toConvert, out var result))
+        {
+            return result;
+        }
+        return 0;
     }
 }
