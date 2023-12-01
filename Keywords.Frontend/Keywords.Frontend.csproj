@@ -16,4 +16,12 @@
       <PackageReference Include="Radzen.Blazor" Version="4.22.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\styles\build\sass\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_JsFileModuleStaticWebAsset Include="wwwroot\js\audioPlayer.js" />
+    </ItemGroup>
+
 </Project>
