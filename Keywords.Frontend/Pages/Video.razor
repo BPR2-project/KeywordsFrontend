@@ -1,47 +1,43 @@
 ﻿@page "/video/{VideoId:guid}"
-@page "/video/{VideoId:guid}/{Page:int}"
+@inject NavigationManager _navigationManager
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
 @inject IKeywordService _keywordService
 @inject ISwapVideoService _videoService
 @inject IIndexerService _indexerService
-@using Radzen
-@using Radzen.Blazor
-@using System.Drawing
 
 <PageTitle>Video</PageTitle>
 @if (_video != null)
 {
     <h1>@_video.Name</h1>
     <p>Description: @_video.Description</p>
+                                       
     @if (_keywords != null)
     {
-        <p>Indexed</p>
-        <p>Keywords:</p>
-        @foreach (var keyword in _keywords)
+        <RadzenPager ShowPagingSummary="true" PagingSummaryFormat="@pagingSummaryFormat" HorizontalAlign="HorizontalAlign.Right" Count="@_count" PageSize="@pageSize" PageNumbersCount="5" PageChanged="@PageChanged"/>
+        @foreach (var keyword in _keywords.Keywords)
         {
-            <p>@keyword.Content</p>
+            <RadzenStack Orientation="Orientation.Vertical">
+                
+                <RadzenCard Style="width:100%; cursor: pointer; margin-top: 3px;">
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenLabel Style="width:50%;">@(keyword.Content)</RadzenLabel>
+                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                                <RadzenLabel Text="Publish" />
+                                <RadzenSwitch  Change=@(args =>  ChangePublishState(keyword)) Value="@keyword.IsPublished!.Value" />
+                            </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenStack>
+   
         }
-        
-        <div class="d-flex justify-content-center">
-            @for (var i = 1; i <= _totalPages; i++)
-            {
-                @if (i == Page)
-                {
-                    <span>@i|</span>
-                }
-                else
-                {
-                    <span><a href="/video/@VideoId/@i">@i</a>|</span>   
-                }
-            }
-        </div>
+        <RadzenPager ShowPagingSummary="true" PagingSummaryFormat="@pagingSummaryFormat" HorizontalAlign="HorizontalAlign.Right" Count="@_count" PageSize="@pageSize" PageNumbersCount="5" PageChanged="@PageChanged"/>
     }
     else if (_indexerResponse != null)
     {
         <h3>Processing video</h3>
         <p><strong>Status: @_indexerResponse.State</strong></p>
-        <RadzenProgressBarCircular Style="height: 100px; width: 100px;" ProgressBarStyle="ProgressBarStyle.Secondary" @bind-Value="@_progress" Mode="ProgressBarMode.Indeterminate" />
+        <RadzenProgressBarCircular Style="height: 100px; width: 100px;" ProgressBarStyle="ProgressBarStyle.Secondary" @bind-Value="@_progress" Mode="ProgressBarMode.Indeterminate"/>
 
     }
     else
@@ -58,44 +54,44 @@ else
 {
     [Parameter]
     public Guid VideoId { get; set; }
-    [Parameter]
-    public int? Page { get; set; }
-    
+
     private SwapVideos.API.Client.Generated.Video? _video;
     IndexerResponse? _indexerResponse;
     private double _progress;
-    private int? _totalPages;
-    private IList<Keyword>? _keywords;
+    private PaginatedKeywordsResponse? _keywords;
+    private int _count;
+    private int _currentPage;
+    int pageSize = 10;
+    string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} keywords)";
+
 
     private async Task GetKeywordsAsync()
     {
         var keywordsRequest = new PaginatedKeywordsRequest
         {
-            Page = Page > 1 ? Page - 1 : 0,
-            Size = 10,
+            Page = 0,
+            Size = pageSize,
             VideoId = VideoId
         };
         try
         {
-            var keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-            Page = keywordsResponse.CurrentPage + 1;
-            _totalPages = keywordsResponse.TotalAmountOfPages;
-            _keywords = keywordsResponse.Keywords;
+            _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+            _count = _keywords.TotalAmount ?? 0;
         }
-        catch (ApiException e) when(e.StatusCode == 404)
+        catch (ApiException e) when (e.StatusCode == 404)
         {
             try
             {
                 _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
                 _progress = ToDouble(_indexerResponse.ProcessingProgress);
             }
-            catch (ApiException ex) when(ex.StatusCode == 404)
+            catch (ApiException ex) when (ex.StatusCode == 404)
             {
-                // Ignored
+    // Ignored
             }
         }
     }
-    
+
     protected override async Task OnParametersSetAsync()
     {
         await IndexerTrigger();
@@ -112,7 +108,7 @@ else
         }
 
         await InvokeAsync(StateHasChanged);
-        using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
         while (await periodicTimer.WaitForNextTickAsync())
         {
             _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
@@ -137,6 +133,7 @@ else
         if (_video?.Id != null)
         {
             await _indexerService.IndexVideoAsync(_video.Id.Value, _video.VideoLink);
+            _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
             await IndexerTrigger();
         }
     }
@@ -148,6 +145,32 @@ else
         {
             return result;
         }
-        return 0;
+        return 98;
+    }
+
+    private async void PageChanged(PagerEventArgs args)
+    {
+        _currentPage = args.PageIndex;
+        var keywordsRequest = new PaginatedKeywordsRequest
+        {
+            Page = args.PageIndex,
+            Size = args.Top,
+            VideoId = VideoId
+        };
+        _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ChangePublishState(Keyword keyword)
+    {
+        var keywordId = keyword.Id ?? new Guid();
+        await _keywordService.PublishKeywordAsync(keywordId, !keyword.IsPublished);
+        var keywordsRequest = new PaginatedKeywordsRequest
+        {
+            Page = _currentPage,
+            Size = pageSize,
+            VideoId = VideoId
+        };
+        _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
     }
 }
