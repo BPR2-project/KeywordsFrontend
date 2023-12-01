@@ -164,7 +164,8 @@ else
     private async Task ChangePublishState(Keyword keyword)
     {
         var keywordId = keyword.Id ?? new Guid();
-        await _keywordService.PublishKeywordAsync(keywordId, !keyword.IsPublished);
+        keyword.IsPublished = !keyword.IsPublished;
+        await _keywordService.PublishKeywordAsync(keywordId, keyword.IsPublished);
         var keywordsRequest = new PaginatedKeywordsRequest
         {
             Page = _currentPage,
