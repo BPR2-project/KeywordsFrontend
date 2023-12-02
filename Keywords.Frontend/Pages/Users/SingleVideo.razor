@@ -5,7 +5,7 @@
 @inject IJSRuntime JS
 
 <div class="py-3 px-2 py-lg-4 px-lg-5" style="background-color:rgb(248 250 252);">
-    <RadzenBreadCrumb Style>
+    <RadzenBreadCrumb>
         <RadzenBreadCrumbItem Text="Language Lessons"/>
         <RadzenBreadCrumbItem Text="Module 1"/>
         <RadzenBreadCrumbItem Text="Video Title"/> 
@@ -75,18 +75,12 @@
                 @foreach (var keyword in _keywords)
                 {
                     <span class="mx-5 my-3" id="@keyword.Id" @onclick="@(() => PlayAudio(keyword.AudioLink, keyword.Id.Value))" Style="cursor: pointer; ">@keyword.Content</span>
-                @* <div class="d-flex flex-row align-items-center"> *@
-                @*     <audio controls=""> *@
-                @*         <source src="@keyword.AudioLink"> *@
-                @*     </audio> *@
-                @* </div> *@
                 }
             </div>
         </RadzenTabsItem>
         <RadzenTabsItem Text="Practice" Style="width: 25%; text-align: center"></RadzenTabsItem>
         <RadzenTabsItem Text="About Teacher" Style="width: 25%; text-align: center">
             <h4 class="fw-bold">Vigdis Thurid</h4>
-
             Vigdis has helped thousands of internationals learn Danish for the last 6 years and she is motivated to help you on your way to Danish fluency. What motivates Vigdis? To help you learn Danish and speak more like the locals. Vigdis has learned Spanish and English and she knows how it is to start from the beginning and live abroad.
         </RadzenTabsItem>
     </Tabs>
@@ -111,5 +105,4 @@
     {
         await JS.InvokeVoidAsync("playAudio", source, id);
     }
-
 }
