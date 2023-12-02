@@ -13,7 +13,6 @@
                                        
     @if (_keywords != null)
     {
-        <RadzenPager ShowPagingSummary="true" PagingSummaryFormat="@pagingSummaryFormat" HorizontalAlign="HorizontalAlign.Right" Count="@_count" PageSize="@pageSize" PageNumbersCount="5" PageChanged="@PageChanged"/>
         @foreach (var keyword in _keywords.Keywords)
         {
             <RadzenStack Orientation="Orientation.Vertical">
@@ -60,7 +59,7 @@ else
     private PaginatedKeywordsResponse? _keywords;
     private int _count;
     private int _currentPage;
-    int pageSize = 10;
+    int pageSize = 20;
     string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} keywords)";
 
 
