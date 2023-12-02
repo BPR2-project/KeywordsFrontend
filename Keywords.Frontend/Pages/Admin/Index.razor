@@ -1,4 +1,6 @@
-﻿@page "/"
+﻿@page "/admin"
+@using Radzen.Blazor
+@using Radzen
 @using Keywords.Services.Interfaces
 
 @inject ISwapVideoService _videoService
@@ -41,7 +43,7 @@
 
     private void ViewVideoDetails(Guid? videoId)
     {
-        Navigation.NavigateTo($"/video/{videoId}");
+        Navigation.NavigateTo($"/admin/video/{videoId}");
     }
 
     private async Task<IEnumerable<SwapVideos.API.Client.Generated.Video>> GetAllVideosAsync(int? page, int size)

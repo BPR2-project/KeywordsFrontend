@@ -1,0 +1,108 @@
+@page "/video"
+@using Keywords.Services.Interfaces
+@using Keywords.API.Client.Generated
+@inject IKeywordService KeywordService
+@inject IJSRuntime JS
+
+<div class="py-3 px-2 py-lg-4 px-lg-5" style="background-color:rgb(248 250 252);">
+    <RadzenBreadCrumb>
+        <RadzenBreadCrumbItem Text="Language Lessons"/>
+        <RadzenBreadCrumbItem Text="Module 1"/>
+        <RadzenBreadCrumbItem Text="Video Title"/> 
+    </RadzenBreadCrumb>
+    <div class="mt-4 mt-lg-5 w-100 align-items-stretch">
+        <div class="mx-auto d-flex flex-column flex-lg-row justify-content-center">
+            <div class="me-0 me-lg-3 mb-3">
+                <h4 class="fw-bolder">Video title</h4>
+                <h6 class="mb-4">description</h6>
+                <div class="text-center rounded-3" style="aspect-ratio: 16/9; background-color: black; color: white; min-height: 400px;">
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100">
+                        <RadzenText Text="Video lesson" TextStyle="TextStyle.H5" Style="color: white"/>
+                        <RadzenButton Text="Sign Up" ButtonType="ButtonType.Button" Style="background-color: darkorange; color: white;">Watch Now</RadzenButton>
+                    </div>
+                </div>
+            </div>
+            <div class="ms-0 ms-lg-4 d-flex flex-column" style="min-width: 250px;">
+                <h6 style="color: darkorange">Coming up next</h6>
+                <h5 class="fw-bolder mb-4">Module: Title</h5>
+                <div class="d-none d-lg-block" style="max-height: 400px; overflow-y: scroll;">
+                    <RadzenStack Orientation="Orientation.Vertical">
+                        @for (int i = 0; i < 10; i++)
+                        {
+                            <div class="d-flex flex-row mb-3">
+                                <div class="text-center rounded-3 d-block m" style="aspect-ratio: 16/9; background-color: black; color: white; height: 70px; cursor: pointer;"></div>
+                                <div class="d-flex flex-column ms-2">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" class="body-text">Lesson</RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Caption">Module 1</RadzenText>
+                                </div>
+                            </div>
+                        }
+                    </RadzenStack>
+                </div>
+                <div class="d-block d-lg-none mb-4" style="overflow-x: scroll;">
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        @for (int i = 0; i < 10; i++)
+                        {
+                            <div class="d-flex flex-row mb-3">
+                                <div class="text-center rounded-3 d-block m" style="aspect-ratio: 16/9; background-color: black; color: white; height: 70px; cursor: pointer;"></div>
+                                <div class="d-flex flex-column ms-2">
+                                    <RadzenText TextStyle="TextStyle.Subtitle2" class="body-text">Lesson</RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Caption">Module 1</RadzenText>
+                                </div>
+                            </div>
+                        }
+                    </RadzenStack>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<RadzenTabs>
+    <Tabs>
+        <RadzenTabsItem Text="Overview" Style="width: 25%;">
+            <span>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nibh risus, facilisis quis ipsum ut, posuere posuere sapien. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer aliquet porttitor enim, venenatis imperdiet diam fermentum a. In at purus sodales, tincidunt justo nec, condimentum magna. Sed scelerisque in libero vel rutrum. Nunc ac metus ac est finibus bibendum sit amet iaculis nisl. Nunc finibus fermentum nisi.
+                <br/>
+                <br/>
+                Nam iaculis ornare nunc quis tincidunt. Curabitur posuere sodales ex, at fringilla purus condimentum ut. Nullam rhoncus justo finibus vehicula mattis. Vestibulum sit amet erat quam. Vivamus in sapien in metus faucibus molestie. Donec ac convallis leo, id molestie elit. Mauris in augue a nisl tristique venenatis. Etiam ut hendrerit leo. Fusce sollicitudin suscipit dui ac vulputate. Nam tellus ligula, congue at diam id, sodales pretium diam. Vivamus suscipit pellentesque euismod.
+                <br/>
+                <br/>
+                Aenean eros nunc, posuere in lectus at, dictum condimentum erat. Cras risus ex, porttitor in massa in, efficitur pharetra est. In eget sem vitae arcu euismod fringilla sit amet vel justo. Pellentesque congue metus vel tincidunt rutrum. Vivamus nisi urna, porttitor a enim in, laoreet aliquet sem. Quisque luctus diam a risus posuere, quis vehicula tortor tincidunt. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum hendrerit sit amet sem non gravida.
+            </span>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Keywords" Style="width: 25%; text-align: center">
+            <div class="d-flex justify-content-between flex-wrap">
+                @foreach (var keyword in _keywords)
+                {
+                    <span class="mx-5 my-3" id="@keyword.Id" @onclick="@(() => PlayAudio(keyword.AudioLink, keyword.Id.Value))" Style="cursor: pointer; ">@keyword.Content</span>
+                }
+            </div>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Practice" Style="width: 25%; text-align: center"></RadzenTabsItem>
+        <RadzenTabsItem Text="About Teacher" Style="width: 25%; text-align: center">
+            <h4 class="fw-bold">Vigdis Thurid</h4>
+            Vigdis has helped thousands of internationals learn Danish for the last 6 years and she is motivated to help you on your way to Danish fluency. What motivates Vigdis? To help you learn Danish and speak more like the locals. Vigdis has learned Spanish and English and she knows how it is to start from the beginning and live abroad.
+        </RadzenTabsItem>
+    </Tabs>
+</RadzenTabs>
+
+@code {
+    private List<Keyword> _keywords;
+    private bool _audioEnded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _keywords = new List<Keyword>();
+
+        var response = await KeywordService.GetAllKeywordsByVideoIdAsync(new PaginatedKeywordsRequest()
+        {
+            VideoId = Guid.Parse("998f1901-99f0-418e-82c1-c18ba368d295")
+        });
+        _keywords = response.Keywords;
+    }
+
+    private async Task PlayAudio(string source, Guid id)
+    {
+        await JS.InvokeVoidAsync("playAudio", source, id);
+    }
+}
