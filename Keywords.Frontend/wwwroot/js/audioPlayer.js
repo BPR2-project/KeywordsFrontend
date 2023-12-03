@@ -50,7 +50,6 @@ window.player = {
                     audio.play();
                 });
             }).catch(err => {
-
             // If the user denies permission to record audio, then display an error.
             // invoke dotnetRef method
             //console.log('Error: ' + err);

@@ -77,7 +77,8 @@
                     <div class="d-inline-block mx-5 my-3">
                         <span class="ps-2">@keyword.Content</span>
                         <img src="audio.svg" alt="audio" @onclick="@(() => PlayAudio(keyword.AudioLink, keyword.Id))" id="@keyword.Id" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
-                        <img src="mic.svg" alt="record" @onclick="@(() => RecordAudio(keyword.Id))" id="@keyword.Id + -recording" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
+                        <img src="mic.svg" alt="record" @onclick="@(() => RecordAudio(keyword.Id))" id="@keyword.Id + start" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
+                        <img src="stop-circle.svg" alt="record" onclick="" id="@keyword.Id + stop" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
                     </div>                                                                                                                 
                 }
             </div>
@@ -112,8 +113,14 @@
     {
         await JS.InvokeVoidAsync("player.play", source, id);
     }
-
+    
     private async Task RecordAudio(Guid id)
+    {
+        await JS.InvokeVoidAsync("player.recording", dotnetRef, id);
+    }
+
+    [JSInvokable]
+    public async Task StopRecordingAsync(Guid id)
     {
         await JS.InvokeVoidAsync("player.recording", dotnetRef, id);
     }
