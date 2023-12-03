@@ -22,7 +22,7 @@
                         <RadzenLabel Style="width:50%;">@(keyword.Content)</RadzenLabel>
                          <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
                                 <RadzenLabel Text="Publish" />
-                                <RadzenSwitch  Change=@(args =>  ChangePublishState(keyword)) Value="@keyword.IsPublished!.Value" />
+                                <RadzenSwitch  Change=@(args =>  ChangePublishState(keyword)) Value="@keyword.IsPublished" />
                             </RadzenStack>
                     </RadzenStack>
                 </RadzenCard>
@@ -81,7 +81,7 @@ else
         try
         {
             _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-            _count = _keywords.TotalAmount ?? 0;
+            _count = _keywords.TotalAmount;
         }
         catch (ApiException e) when (e.StatusCode == 404)
         {
@@ -163,7 +163,7 @@ else
 
     private async Task ChangePublishState(Keyword keyword)
     {
-        var keywordId = keyword.Id ?? new Guid();
+        var keywordId = keyword.Id;
         keyword.IsPublished = !keyword.IsPublished;
         await _keywordService.PublishKeywordAsync(keywordId, keyword.IsPublished);
         var keywordsRequest = new PaginatedKeywordsRequest
