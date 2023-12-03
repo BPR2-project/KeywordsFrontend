@@ -1,5 +1,4 @@
 @page "/admin/video/{VideoId:guid}"
-@page "/admin/video/{VideoId:guid}/{Page:int}"
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
 @inject IKeywordService _keywordService
@@ -14,7 +13,6 @@
                                        
     @if (_keywords != null)
     {
-        <RadzenPager ShowPagingSummary="true" PagingSummaryFormat="@pagingSummaryFormat" HorizontalAlign="HorizontalAlign.Right" Count="@_count" PageSize="@pageSize" PageNumbersCount="5" PageChanged="@PageChanged"/>
         @foreach (var keyword in _keywords.Keywords)
         {
             <RadzenStack Orientation="Orientation.Vertical">
@@ -37,12 +35,13 @@
     {
         <h3>Processing video</h3>
         <p><strong>Status: @_indexerResponse.State</strong></p>
-        <RadzenProgressBarCircular Style="height: 100px; width: 100px;" ProgressBarStyle="ProgressBarStyle.Secondary" @bind-Value="@_progress" Mode="ProgressBarMode.Indeterminate"/>
+        <RadzenProgressBarCircular Style="height: 100px; width: 100px;" ProgressBarStyle="ProgressBarStyle.Primary" @bind-Value="@_progress" Mode="ProgressBarMode.Indeterminate"/>
 
     }
     else
     {
-        <button type="button" class="btn btn-lg btn-primary" @onclick="IndexVideo">Index</button>
+        <RadzenButton Disabled="@_disableIndexButton" Text="Index" ButtonStyle="ButtonStyle.Primary" Click="IndexVideo"/>
+
     }
 }
 else
@@ -61,10 +60,16 @@ else
     private PaginatedKeywordsResponse? _keywords;
     private int _count;
     private int _currentPage;
-    int pageSize = 10;
+    private bool _disableIndexButton;
+    int pageSize = 20;
     string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} keywords)";
 
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await IndexerTrigger();
+    }
+    
     private async Task GetKeywordsAsync()
     {
         var keywordsRequest = new PaginatedKeywordsRequest
@@ -87,14 +92,9 @@ else
             }
             catch (ApiException ex) when (ex.StatusCode == 404)
             {
-    // Ignored
+                 // Ignored
             }
         }
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await IndexerTrigger();
     }
 
     private async Task IndexerTrigger()
@@ -106,7 +106,6 @@ else
         {
             return;
         }
-
         await InvokeAsync(StateHasChanged);
         using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
         while (await periodicTimer.WaitForNextTickAsync())
@@ -133,6 +132,7 @@ else
         if (_video?.Id != null)
         {
             await _indexerService.IndexVideoAsync(_video.Id.Value, _video.VideoLink);
+            _disableIndexButton = true;
             _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
             await IndexerTrigger();
         }
