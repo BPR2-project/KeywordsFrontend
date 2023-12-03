@@ -72,7 +72,7 @@
         </RadzenTabsItem>
         <RadzenTabsItem Text="Keywords" Style="width: 25%; text-align: center">
             <div class="d-flex justify-content-between flex-wrap">
-                @foreach (var keyword in _keywords)
+                @foreach (var keyword in _keywords!)
                 {
                     <div class="d-inline-block mx-5 my-3">
                         <span class="ps-2">@keyword.Content</span>
@@ -91,15 +91,19 @@
 </RadzenTabs>
 
 @code {
-    private List<Keyword> _keywords;
+    private List<Keyword>? _keywords;
+    private DotNetObjectReference<SingleVideo> _dotNetObject;
 
     protected override async Task OnInitializedAsync()
     {
+        _dotNetObject = DotNetObjectReference.Create(this);
         _keywords = new List<Keyword>();
+        
+        Guid.TryParse("998f1901-99f0-418e-82c1-c18ba368d295", out var guid);
 
         var response = await KeywordService.GetAllKeywordsByVideoIdAsync(new PaginatedKeywordsRequest()
         {
-            VideoId = Guid.Parse("998f1901-99f0-418e-82c1-c18ba368d295"),
+            VideoId = guid,
             Published = true
         });
         _keywords = response.Keywords;
