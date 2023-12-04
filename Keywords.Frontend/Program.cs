@@ -11,6 +11,8 @@ builder.Services.AddScoped<IKeywordClient>(_ => new KeywordClient
     { BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend") });
 builder.Services.AddScoped<IIndexerClient>(_ => new IndexerClient
     { BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend") });
+builder.Services.AddScoped<ISpeechClient>(_ => new SpeechClient()
+    { BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend") });
 builder.Services.AddScoped<IVideoClient>(_ => new VideoClient
     { BaseUrl = builder.Configuration.GetConnectionString("videosbackend") });
 
@@ -18,6 +20,7 @@ builder.Services.AddScoped<IVideoClient>(_ => new VideoClient
 builder.Services.AddScoped<IKeywordService, KeywordService>();
 builder.Services.AddScoped<IIndexerService, IndexerService>();
 builder.Services.AddScoped<ISwapVideoService, SwapVideoService>();
+builder.Services.AddScoped<ISpeechService, SpeechService>();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 var app = builder.Build();

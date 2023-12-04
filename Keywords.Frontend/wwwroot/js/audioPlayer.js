@@ -15,44 +15,54 @@ window.player = {
             }, true
         );
     },
-    recording: function (dotnetRef, id) {
-        const startButton = document.getElementById(id + 'start');
-        const stopButton = document.getElementById(id + 'stop');
-        const playButton = document.getElementById(id + 'play');
+    recording: async function (dotnetRef, id) {
+        const startButton = document.getElementById(String(id + 'start'));
+        const playButton = document.getElementById(String(id + 'play'));
         let audioRecorder;
         let audioChunks = [];
+        
+        window.fileDataStream = async function (){
+            const blobObj = new Blob(audioChunks, {type: 'audio/wav'});
+            const x = await blobObj.arrayBuffer();
+            return new Uint8Array(x);
+        }
+        async function startRecording(){
+            audioChunks = [];
+            audioRecorder.start();
+            setTimeout(() =>{
+                audioRecorder.stop();
+            },2000);
+        }
+        
+        // async function pushErrorToBlazor(err){
+        //     await dotnetRef.invokeMethodAsync();
+        // }
+        
         navigator.mediaDevices.getUserMedia({audio: true})
             .then(stream => {
                 // Initialize the media recorder object
                 audioRecorder = new MediaRecorder(stream);
-
+                
+                startRecording();
+                
                 // dataavailable event is fired when the recording is stopped
-                audioRecorder.addEventListener('dataavailable', e => {
+                audioRecorder.ondataavailable = async function (e) {
                     audioChunks.push(e.data);
-                });
-
-                // start recording when the start button is clicked
-                startButton.addEventListener('click', () => {
-                    audioChunks = [];
-                    audioRecorder.start();
-                });
-
-                // stop recording when the stop button is clicked
-                stopButton.addEventListener('click', () => {
-                    audioRecorder.stop();
-                });
-
+                }
+                
+                audioRecorder.onstop = async function (e ){
+                    await dotnetRef.invokeMethodAsync('Receive', id);
+                }
+                
                 // play the recorded audio when the play button is clicked
                 playButton.addEventListener('click', () => {
-                    const blobObj = new Blob(audioChunks, {type: 'audio/wav'});
+                    const blobObj = new Blob(audioChunks, {type: 'audio/webm'});
                     const audioUrl = URL.createObjectURL(blobObj);
                     const audio = new Audio(audioUrl);
                     audio.play();
                 });
             }).catch(err => {
-            // If the user denies permission to record audio, then display an error.
-            // invoke dotnetRef method
-            //console.log('Error: ' + err);
+                // pushErrorToBlazor(err);
         });
     }
 }
