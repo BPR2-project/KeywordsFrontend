@@ -2,14 +2,8 @@
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
 @using System.Reflection.Metadata
-@using Keywords.Services
+@using System.Net
 @using NAudio.Wave
-@using NAudio.Wave.SampleProviders
-@using Keywords.Services.Interfaces
-@using Microsoft.AspNetCore.Mvc
-@using Microsoft.JSInterop
-@using Radzen
-@using Radzen.Blazor
 @inject IKeywordService KeywordService
 @inject IJSRuntime JS
 @inject ISpeechService SpeechService
@@ -81,15 +75,16 @@
             </span>
         </RadzenTabsItem>
         <RadzenTabsItem Text="Keywords" Style="width: 25%; text-align: center">
+            <p>Click on the microphone next to the keywords to practice your pronunciation. Word being assessed: @assessedKeyWord | Pronunciation Score: @score</p>
             <div class="d-flex justify-content-between flex-wrap">
                 @foreach (var keyword in _keywords!)
                 {
                     <div class="d-inline-block mx-5 my-3">
                         <span class="ps-2" id=@string.Concat(keyword.Id, "play")>@keyword.Content</span>
                         <img src="audio.svg" alt="audio" @onclick="@(() => PlayAudio(keyword.AudioLink, keyword.Id))" id="@keyword.Id" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
-                        <img src="mic.svg" alt="record" @onclick="@(() => RecordAudio(keyword.Id))" id=@string.Concat(keyword.Id, "start") Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
-                        <img src="stop-circle.svg" alt="record" onclick="" id=@string.Concat(keyword.Id, "stop") Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
+                        <img src="mic.svg" alt="record" @onclick="@(() => RecordAudio(keyword.Id, keyword.Content))" id=@string.Concat(keyword.Id, "start") Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
                     </div>
+                    /*
                     <div class="@(_isAssessed ? "d-block" : "d-none")">
                         @if (_assessmentDtos != null && _assessmentDtos.Count != 0)
                         {
@@ -104,7 +99,7 @@
                                 <span>@assessment.Display</span>
                             }
                         }
-                    </div>
+                    </div>*/
                 }
             </div>
         </RadzenTabsItem>
@@ -120,8 +115,10 @@
 @code {
     private List<Keyword> _keywords;
     private DotNetObjectReference<SingleVideo>? dotnetRef;
-    private List<PronunciationAssessmentDTO>? _assessmentDtos;
+    private PronunciationAssessmentDTO _assessmentDto;
     private bool _isAssessed;
+    string assessedKeyWord;
+    int score;
 
     protected override async Task OnInitializedAsync()
     {
@@ -147,8 +144,9 @@
         await JS.InvokeVoidAsync("player.play", source, id);
     }
 
-    private async Task RecordAudio(Guid id)
+    private async Task RecordAudio(Guid id, string keyword)
     {
+        assessedKeyWord = keyword;
         await JS.InvokeVoidAsync("player.recording", dotnetRef, id);
     }
 
@@ -166,23 +164,27 @@
             await JS.InvokeAsync<IJSStreamReference>("fileDataStream");
         using var dataReferenceStream =
             await dataReference.OpenReadStreamAsync(maxAllowedSize: 10_000_000);
-
+        
         var keyword = _keywords.First(a => a.Id == id);
 
         using (var stream = new MemoryStream())
         {
             await dataReferenceStream.CopyToAsync(stream);
             stream.Seek(0, SeekOrigin.Begin);
-
+            /*
             string filePath = Path.Combine("test.wav");
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             {
                 stream.CopyTo(fileStream);
-            }
+            }*/
 
-            var result = await SpeechService.CreatePronunciationAssessmentAsync(stream, keyword.Language, keyword.Content);
+            var file = new FileParameter(stream, "body");
+
+            var result = await SpeechService.CreatePronunciationAssessmentAsync(file, keyword.Language, keyword.Content);
+
             _isAssessed = true;
-            _assessmentDtos = result.NBest;
+            score = (int) result.NBest[0].PronScore;
+            Console.Write(score);
         }
     }
 

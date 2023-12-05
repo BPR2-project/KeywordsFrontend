@@ -31,7 +31,7 @@ window.player = {
             audioRecorder.start();
             setTimeout(() =>{
                 audioRecorder.stop();
-            },2000);
+            },3000);
         }
         
         // async function pushErrorToBlazor(err){
@@ -53,14 +53,14 @@ window.player = {
                 audioRecorder.onstop = async function (e ){
                     await dotnetRef.invokeMethodAsync('Receive', id);
                 }
-                
+                /*
                 // play the recorded audio when the play button is clicked
                 playButton.addEventListener('click', () => {
                     const blobObj = new Blob(audioChunks, {type: 'audio/webm'});
                     const audioUrl = URL.createObjectURL(blobObj);
                     const audio = new Audio(audioUrl);
                     audio.play();
-                });
+                }); */
             }).catch(err => {
                 // pushErrorToBlazor(err);
         });

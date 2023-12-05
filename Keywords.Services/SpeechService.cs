@@ -12,8 +12,8 @@ public class SpeechService : ISpeechService
         _speechClient = speechClient;
     }
 
-    public async Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(Stream audioFile, string language, string referenceText)
+    public async Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(FileParameter audioFile, string language, string referenceText)
     {
-        return await _speechClient.CreatePronunciationAssessmentAsync(audioFile, language, referenceText);
+        return await _speechClient.CreatePronunciationAssessmentAsync(language, referenceText, audioFile);
     }
 }

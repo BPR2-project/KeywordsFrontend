@@ -143,10 +143,13 @@ paths:
       operationId: "CreatePronunciationAssessment"
       requestBody:
         content:
-          audio/wav:
+          multipart/form-data:
             schema:
-              type: string
-              format: binary
+              type: object
+              properties:
+                body:
+                  type: string
+                  format: binary
       parameters:
         - name: language
           in: query
