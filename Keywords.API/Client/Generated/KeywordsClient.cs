@@ -938,7 +938,7 @@ namespace Keywords.API.Client.Generated
         /// <param name="referenceText">Text of the pronounced word</param>
         /// <returns>Pronunciation Assessment was created successfully</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(System.IO.Stream body, string language, string referenceText);
+        System.Threading.Tasks.Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(string language, string referenceText, FileParameter body);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
@@ -951,7 +951,7 @@ namespace Keywords.API.Client.Generated
         /// <param name="referenceText">Text of the pronounced word</param>
         /// <returns>Pronunciation Assessment was created successfully</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(System.IO.Stream body, string language, string referenceText, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(string language, string referenceText, FileParameter body, System.Threading.CancellationToken cancellationToken);
 
     }
 
@@ -996,9 +996,9 @@ namespace Keywords.API.Client.Generated
         /// <param name="referenceText">Text of the pronounced word</param>
         /// <returns>Pronunciation Assessment was created successfully</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(System.IO.Stream body, string language, string referenceText)
+        public virtual System.Threading.Tasks.Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(string language, string referenceText, FileParameter body)
         {
-            return CreatePronunciationAssessmentAsync(body, language, referenceText, System.Threading.CancellationToken.None);
+            return CreatePronunciationAssessmentAsync(language, referenceText, body, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -1012,7 +1012,7 @@ namespace Keywords.API.Client.Generated
         /// <param name="referenceText">Text of the pronounced word</param>
         /// <returns>Pronunciation Assessment was created successfully</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(System.IO.Stream body, string language, string referenceText, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(string language, string referenceText, FileParameter body, System.Threading.CancellationToken cancellationToken)
         {
             if (language == null)
                 throw new System.ArgumentNullException("language");
@@ -1032,8 +1032,20 @@ namespace Keywords.API.Client.Generated
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                    var content_ = new System.Net.Http.StreamContent(body);
-                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/octet-stream");
+                    var boundary_ = System.Guid.NewGuid().ToString();
+                    var content_ = new System.Net.Http.MultipartFormDataContent(boundary_);
+                    content_.Headers.Remove("Content-Type");
+                    content_.Headers.TryAddWithoutValidation("Content-Type", "multipart/form-data; boundary=" + boundary_);
+
+                    if (body == null)
+                        throw new System.ArgumentNullException("body");
+                    else
+                    {
+                        var content_body_ = new System.Net.Http.StreamContent(body.Data);
+                        if (!string.IsNullOrEmpty(body.ContentType))
+                            content_body_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(body.ContentType);
+                        content_.Add(content_body_, "body", body.FileName ?? "body");
+                    }
                     request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("POST");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));

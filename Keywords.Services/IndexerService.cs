@@ -18,7 +18,7 @@ public class IndexerService : IIndexerService
         await _indexerClient.IndexVideoAsync(videoId, url);
     }
 
-    public async Task<IndexerProgress> GetIndexerResponseAsync(Guid videoId)
+    public async Task<IndexerProgress> GetIndexerProgressAsync(Guid videoId)
     {
         return await _indexerClient.GetIndexerProgressAsync(videoId);
     }

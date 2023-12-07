@@ -5,5 +5,5 @@ namespace Keywords.Services.Interfaces;
 public interface IIndexerService
 {
     Task IndexVideoAsync(Guid videoId, string url);
-    Task<IndexerProgress> GetIndexerResponseAsync(Guid videoId);
+    Task<IndexerProgress> GetIndexerProgressAsync(Guid videoId);
 }
