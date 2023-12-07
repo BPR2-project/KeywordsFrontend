@@ -4,6 +4,6 @@ namespace Keywords.Services.Interfaces;
 
 public interface ISpeechService
 {
-    Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(FileParameter audioFile, string language,
+    Task<PronunciationAssessmentResponseDTO> CreatePronunciationAssessmentAsync(Stream audioFile, string language,
         string referenceText);
 }

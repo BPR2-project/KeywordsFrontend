@@ -2,8 +2,6 @@
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
 @using System.Reflection.Metadata
-@using System.Net
-@using NAudio.Wave
 @inject IKeywordService KeywordService
 @inject IJSRuntime JS
 @inject ISpeechService SpeechService
@@ -84,22 +82,18 @@
                         <img src="audio.svg" alt="audio" @onclick="@(() => PlayAudio(keyword.AudioLink, keyword.Id))" id="@keyword.Id" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
                         <img src="mic.svg" alt="record" @onclick="@(() => RecordAudio(keyword.Id, keyword.Content))" id=@string.Concat(keyword.Id, "start") Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
                     </div>
-                    /*
-                    <div class="@(_isAssessed ? "d-block" : "d-none")">
-                        @if (_assessmentDtos != null && _assessmentDtos.Count != 0)
-                        {
-                            @foreach (var assessment in _assessmentDtos)
-                            {
-                                <span>@assessment.AccuracyScore</span>
-                                <span>@assessment.CompletenessScore</span>
-                                <span>@assessment.FluencyScore</span>
-                                <span>@assessment.PronScore</span>
-                                <span>@assessment.Lexical</span>
-                                <span>@assessment.Confidence</span>
-                                <span>@assessment.Display</span>
-                            }
-                        }
-                    </div>*/
+                    
+                    @* <div class="@(_isAssessed ? "d-block" : "d-none")"> *@
+                    @* *@
+                    @*             <span>@_assessmentDto.AccuracyScore</span> *@
+                    @*             <span>@_assessmentDto.CompletenessScore</span> *@
+                    @*             <span>@_assessmentDto.FluencyScore</span> *@
+                    @*             <span>@_assessmentDto.PronScore</span> *@
+                    @*             <span>@_assessmentDto.Lexical</span> *@
+                    @*             <span>@_assessmentDto.Confidence</span> *@
+                    @*             <span>@_assessmentDto.Display</span> *@
+                    @* *@
+                    @* </div> *@
                 }
             </div>
         </RadzenTabsItem>
@@ -115,7 +109,7 @@
 @code {
     private List<Keyword> _keywords;
     private DotNetObjectReference<SingleVideo>? dotnetRef;
-    private PronunciationAssessmentDTO _assessmentDto;
+    // private PronunciationAssessmentDTO _assessmentDto;
     private bool _isAssessed;
     string assessedKeyWord;
     int score;
@@ -170,18 +164,23 @@
         using (var stream = new MemoryStream())
         {
             await dataReferenceStream.CopyToAsync(stream);
+            
             stream.Seek(0, SeekOrigin.Begin);
-            /*
-            string filePath = Path.Combine("test.wav");
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                stream.CopyTo(fileStream);
-            }*/
 
-            var file = new FileParameter(stream, "body");
-
-            var result = await SpeechService.CreatePronunciationAssessmentAsync(file, keyword.Language, keyword.Content);
-
+            // var writer = new WaveFileWriter(stream, new WaveFormat());
+            // writer.WaveFormat.AsStandardWaveFormat();
+            // writer.Flush();
+            
+            // string filePath = Path.Combine("test.wav");
+            //
+            // using (var fileStream = new FileStream(filePath, FileMode.Create))
+            // {
+            //     await stream.CopyToAsync(fileStream);
+            // }
+            
+            // var file = new FileParameter(stream, "body");
+            var result = await SpeechService.CreatePronunciationAssessmentAsync(stream, keyword.Language, keyword.Content);
+            // _assessmentDto = result.NBest.FirstOrDefault();
             _isAssessed = true;
             score = (int) result.NBest[0].PronScore;
             Console.Write(score);

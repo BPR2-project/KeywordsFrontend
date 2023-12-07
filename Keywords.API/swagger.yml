@@ -145,11 +145,8 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type: object
-              properties:
-                body:
-                  type: string
-                  format: binary
+              type: string
+              format: binary
       parameters:
         - name: language
           in: query
