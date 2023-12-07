@@ -100,7 +100,6 @@ else
     [Parameter]
     public Guid VideoId { get; set; }
 
-    private string? activeBreakpoint { get; set; }
     private SwapVideos.API.Client.Generated.Video? _video;
     IndexerProgress? _indexerProgress;
     private double _progress;
@@ -117,7 +116,7 @@ else
     {
         await IndexerTrigger();
     }
-    
+
     private async Task GetKeywordsAsync()
     {
         var keywordsRequest = new PaginatedKeywordsRequest
@@ -141,7 +140,7 @@ else
             }
             catch (ApiException ex) when (ex.StatusCode == 404)
             {
-                 // Ignored
+    // Ignored
             }
         }
     }
@@ -225,5 +224,4 @@ else
         _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
         _publishedKeywords = _keywords.Keywords.Where(x => x.IsPublished).ToList();
     }
-}
 }
