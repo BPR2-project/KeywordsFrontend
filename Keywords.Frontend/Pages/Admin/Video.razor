@@ -8,70 +8,73 @@
 
 @if (_video != null)
 {
-    <RadzenBreadCrumb>
-        <RadzenBreadCrumbItem Text="Videos" Path="/admin" Style="color: black"/>
+    <RadzenBreadCrumb Style="color: black !important">
+        <RadzenBreadCrumbItem Text="Videos" Path="/admin" />
         <RadzenBreadCrumbItem Text="Video overview"/>
     </RadzenBreadCrumb>
-    <RadzenStack Orientation="Orientation.Horizontal" Style="margin-top: 2%" JustifyContent="JustifyContent.SpaceBetween">
+    <RadzenStack Orientation="Orientation.Vertical" Style="margin-top: 2%;" >
         <RadzenStack Orientation="Orientation.Vertical">
-            <RadzenStack  Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start">
+            <RadzenStack  Orientation="Orientation.Horizontal">
                 <RadzenStack>
                     <div class="col-md-9">
                         <RadzenHtml>
-                            <video controls width="400" >
+                            <video controls width="450" >
                                 <source src="@_video.VideoLink" type="video/mp4">
                             </video>
                         </RadzenHtml>
                     </div>
                 </RadzenStack>
-                <RadzenStack Orientation="Orientation.Vertical" Style="margin-left: 15px">
-                    <RadzenText TextStyle="TextStyle.H6"><b>Title: </b>@_video.Name</RadzenText>
-                    <RadzenText TextStyle="TextStyle.Body1"><b>Description: </b> @_video.Description</RadzenText>
-                    <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenCard>Hello</RadzenCard>
-                        <RadzenCard>Number Views</RadzenCard>
-                        <RadzenCard>Looks bad</RadzenCard>
+                <RadzenStack Orientation="Orientation.Horizontal" Style="width: 100%">
+                    <RadzenCard Style="background-color:  #F1F5F9; width: 40%">
+                        <RadzenStack Orientation="Orientation.Vertical">
+                            <RadzenText TextStyle="TextStyle.Body1"><b>Title: </b>@_video.Name</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body1"><b>Description: </b> @_video.Description</RadzenText>
+                        </RadzenStack>
+                    </RadzenCard>
+                    <RadzenStack Orientation="Orientation.Horizontal" Style="width: 60%" JustifyContent="JustifyContent.SpaceBetween">
+                        <RadzenCard Style="background-color:  #F1F5F9; width: 50%">
+                            <RadzenStack Orientation="Orientation.Vertical">
+                                <RadzenText TextStyle="TextStyle.H6" TextAlign="TextAlign.Center">Belongs to Module:</RadzenText>
+                                <RadzenText TextStyle="TextStyle.H1" TextAlign="TextAlign.Center">4</RadzenText>
+                            </RadzenStack>
+                        </RadzenCard>
+                        <RadzenCard Style="background-color:  #F1F5F9;  width: 50%">
+                            <RadzenStack Orientation="Orientation.Vertical">
+                                <RadzenText TextStyle="TextStyle.H6" TextAlign="TextAlign.Center">Keywords Published:</RadzenText>
+                                <RadzenText TextStyle="TextStyle.H1" TextAlign="TextAlign.Center">@_totalPublished</RadzenText>
+                            </RadzenStack>
+                        </RadzenCard>
                     </RadzenStack>
                 </RadzenStack>
-            </RadzenStack>
-            <RadzenStack Gap="0.3rem">
-                <RadzenText TextStyle="TextStyle.H6">Published Keywords</RadzenText>
-                <RadzenText TextStyle="TextStyle.Body1">Total: @_publishedKeywords.Count</RadzenText>
-                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.2rem" Wrap="FlexWrap.Wrap">
-                    @foreach (var keyword in _publishedKeywords)
-                    {
-                        <RadzenCard Style="background-color: #F1F5F9">
-                            <RadzenLabel> @keyword.Content</RadzenLabel>
-                        </RadzenCard>
-                    }
                 </RadzenStack>
-            </RadzenStack>
     </RadzenStack>
-        <RadzenStack AlignItems="AlignItems.Start">
+        <RadzenStack>
             @if (_keywords != null)
 
             {
-                <div style="border-color: #48494A;">
-                <RadzenText Text="Select keywords to publish" TextStyle="TextStyle.H6"/>
-                
-                <RadzenStack Gap="0.2rem" Style="height: 50%; overflow: auto" >
-                    @foreach (var keyword in _keywords.Keywords.Where(x => !x.IsPublished))
-                    {
-                        <RadzenStack Orientation="Orientation.Vertical">
-
-                            <RadzenCard Style="cursor: pointer;">
+                <RadzenStack Style="margin-top: 2%; background-color:  #F1F5F9; border: 3px #48494A;" JustifyContent="JustifyContent.Center">
+                   
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround">
+                        <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center">
+                            <RadzenText TextStyle="TextStyle.H3">Keywords Panel</RadzenText>
+                            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+                            <RadzenLabel Text="See only published: "/>
+                            <RadzenCheckBox TValue="bool" Value="@_published" Change=@(args => SeeOnlyPublished(!_published))/>
+                            </RadzenStack>
+                        </RadzenStack>
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.2rem" Wrap="FlexWrap.Wrap">
+                        @foreach (var keyword in _toShow!)
+                        {
+                            <RadzenCard Style="background-color: #F1F5F9; width: 250px; height: 80px">
                                 <RadzenStack Orientation="Orientation.Horizontal">
-                                    <RadzenLabel Style="width:85%;">@(keyword.Content)</RadzenLabel>
-                                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-                                        <RadzenSwitch Change=@(args => ChangePublishState(keyword)) Value="@keyword.IsPublished"/>
-                                    </RadzenStack>
+                                    <RadzenLabel Text="@keyword.Content" Style="width: 95%; flex-wrap: wrap !important"/>
+                                    <RadzenCheckBox TValue="bool" Value=@keyword.IsPublished Change=@(args => ChangePublishState(keyword))/>
                                 </RadzenStack>
                             </RadzenCard>
-                        </RadzenStack>
-                    }
-                    <RadzenPager Density="Density.Compact" ShowPagingSummary="true" PagingSummaryFormat="" Count="@_count" PageSize="@pageSize" PageNumbersCount="4" PageChanged="@PageChanged"/>
+                        }
+                    </RadzenStack>
                 </RadzenStack>
-                </div>
               
             }
             else if (_indexerProgress != null)
@@ -91,8 +94,9 @@
     
     }
 else
-{
-    <RadzenProgressBarCircular Style="height: 100px; width: 100px;" ProgressBarStyle="ProgressBarStyle.Primary" Mode="ProgressBarMode.Indeterminate"/>
+{  <RadzenStack JustifyContent="JustifyContent.Center"  AlignItems="AlignItems.Center" Style="margin-top: 10%">
+   <RadzenProgressBarCircular Style="height: 300px; width: 300px;" ProgressBarStyle="ProgressBarStyle.Primary" Mode="ProgressBarMode.Indeterminate"/>
+   </RadzenStack>
 }
 
 @code
@@ -104,17 +108,21 @@ else
     IndexerProgress? _indexerProgress;
     private double _progress;
     private PaginatedKeywordsResponse? _keywords;
-    private int _count;
-    private int _currentPage;
     private bool _disableIndexButton;
     private int pageSize = 50;
-    private string pagingSummaryFormat = "(total {2} keywords)";
-    private List<Keyword> _publishedKeywords = new();
-
-
+    private List<Keyword>? _toShow;
+    private bool _published;
+    private int _totalPublished;
+    
     protected override async Task OnParametersSetAsync()
     {
         await IndexerTrigger();
+        UpdateCount();
+    }
+
+    private void UpdateCount()
+    {
+        _totalPublished = _keywords?.Keywords.Count(x => x.IsPublished) ?? 0;
     }
 
     private async Task GetKeywordsAsync()
@@ -128,8 +136,7 @@ else
         try
         {
             _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-            _publishedKeywords = _keywords.Keywords.Where(keyword => keyword.IsPublished).ToList();
-            _count = _keywords.TotalAmount;
+            _toShow = _keywords?.Keywords;
         }
         catch (ApiException e) when (e.StatusCode == 404)
         {
@@ -195,21 +202,7 @@ else
         }
         return 98;
     }
-
-    private async void PageChanged(PagerEventArgs args)
-    {
-        _currentPage = args.PageIndex;
-        var keywordsRequest = new PaginatedKeywordsRequest
-        {
-            Page = args.PageIndex,
-            Size = args.Top,
-            VideoId = VideoId
-        };
-        _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-        _publishedKeywords = _keywords.Keywords.Where(x => x.IsPublished).ToList();
-        await InvokeAsync(StateHasChanged);
-    }
-
+    
     private async Task ChangePublishState(Keyword keyword)
     {
         var keywordId = keyword.Id;
@@ -217,11 +210,18 @@ else
         await _keywordService.PublishKeywordAsync(keywordId, keyword.IsPublished);
         var keywordsRequest = new PaginatedKeywordsRequest
         {
-            Page = _currentPage,
+            Page = 0,
             Size = pageSize,
             VideoId = VideoId
         };
         _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-        _publishedKeywords = _keywords.Keywords.Where(x => x.IsPublished).ToList();
+        UpdateCount();
+        SeeOnlyPublished(_published);
+    }
+    
+    private void SeeOnlyPublished(bool published)
+    {
+        _published = published;
+        _toShow = _published ? _keywords?.Keywords.Where(keyword => keyword.IsPublished).ToList() : _keywords?.Keywords;
     }
 }

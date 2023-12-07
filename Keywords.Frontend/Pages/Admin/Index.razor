@@ -4,10 +4,12 @@
 @inject NavigationManager Navigation
 
 <PageTitle>Videos</PageTitle>
-
+    <RadzenBreadCrumb Style="margin-bottom: 3%">
+        <RadzenBreadCrumbItem Text="Videos" />
+    </RadzenBreadCrumb>
 <RadzenDataList WrapItems="true" AllowPaging="false" Data="@videos" TItem="SwapVideos.API.Client.Generated.Video">
     <Template Context="video">
-        <RadzenCard Style="width:300px; cursor: pointer;" @onclick="() => ViewVideoDetails(video.Id)">
+        <RadzenCard Style="width:300px !important; cursor: pointer;" @onclick="() => ViewVideoDetails(video.Id)">
             <RadzenStack Orientation="Orientation.Vertical">
                     <RadzenText TextStyle="TextStyle.Overline" class="rz-display-flex rz-mt-2 rz-my-0">Name</RadzenText>
                     <RadzenText TextStyle="TextStyle.Body1"><b>@(video?.Name)</b></RadzenText>
@@ -21,7 +23,7 @@
 <RadzenPager ShowPagingSummary="true" PagingSummaryFormat="@pagingSummaryFormat" HorizontalAlign="Radzen.HorizontalAlign.Right" Count="count" PageSize="@pageSize" PageNumbersCount="5" PageChanged="@PageChanged" />
 @code {
     string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} videos)";
-    int pageSize = 12;
+    int pageSize = 10;
     int count;
     IEnumerable<SwapVideos.API.Client.Generated.Video> videos;
 

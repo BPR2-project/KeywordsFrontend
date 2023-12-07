@@ -1,9 +1,15 @@
 .center{
-    width: 100%;
+    align-self: center !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 90%;
 }
 @media (min-width: 1600px) {
-    .center{
-       width: 70%;
+    .center {
+        align-self: center;
+        align-items: center;
+        justify-content: center;
+        width: 70%;
     }
 }
 .page {
