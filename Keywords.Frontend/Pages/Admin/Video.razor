@@ -4,59 +4,75 @@
 @inject IKeywordService _keywordService
 @inject ISwapVideoService _videoService
 @inject IIndexerService _indexerService
-
 <PageTitle>Video</PageTitle>
+
 @if (_video != null)
 {
     <RadzenBreadCrumb>
         <RadzenBreadCrumbItem Text="Videos" Path="/admin" Style="color: black"/>
         <RadzenBreadCrumbItem Text="Video overview"/>
     </RadzenBreadCrumb>
-
-    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.2rem" Style="margin-top: 15px">
-        <RadzenStack Style="width:70%;" Orientation="Orientation.Horizontal" >
-            <RadzenStack>
-                <div class="col-md-9">
-                    <RadzenHtml>
-                        <video controls width="250" style="width: 300px;">
-                            <source src="@_video.VideoLink" type="video/mp4">
-                        </video>
-                    </RadzenHtml>
-                </div>
-            </RadzenStack>
-            <RadzenStack Orientation="Orientation.Vertical" Style="margin-left: 15px">
-                <RadzenText><b>Title: </b>@_video.Name</RadzenText>
-                <RadzenText><b>Description: </b> @_video.Description</RadzenText>
-                <RadzenStack Orientation="Orientation.Horizontal">
-                    <RadzenCard>Hello</RadzenCard>
-                    <RadzenCard>Number Views</RadzenCard>
-                    <RadzenCard></RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" Style="margin-top: 2%" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenStack Orientation="Orientation.Vertical">
+            <RadzenStack  Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start">
+                <RadzenStack>
+                    <div class="col-md-9">
+                        <RadzenHtml>
+                            <video controls width="400" >
+                                <source src="@_video.VideoLink" type="video/mp4">
+                            </video>
+                        </RadzenHtml>
+                    </div>
+                </RadzenStack>
+                <RadzenStack Orientation="Orientation.Vertical" Style="margin-left: 15px">
+                    <RadzenText TextStyle="TextStyle.H6"><b>Title: </b>@_video.Name</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1"><b>Description: </b> @_video.Description</RadzenText>
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenCard>Hello</RadzenCard>
+                        <RadzenCard>Number Views</RadzenCard>
+                        <RadzenCard>Looks bad</RadzenCard>
+                    </RadzenStack>
                 </RadzenStack>
             </RadzenStack>
-        </RadzenStack>
-        <RadzenStack>
+            <RadzenStack Gap="0.3rem">
+                <RadzenText TextStyle="TextStyle.H6">Published Keywords</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1">Total: @_publishedKeywords.Count</RadzenText>
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.2rem" Wrap="FlexWrap.Wrap">
+                    @foreach (var keyword in _publishedKeywords)
+                    {
+                        <RadzenCard Style="background-color: #F1F5F9">
+                            <RadzenLabel> @keyword.Content</RadzenLabel>
+                        </RadzenCard>
+                    }
+                </RadzenStack>
+            </RadzenStack>
+    </RadzenStack>
+        <RadzenStack AlignItems="AlignItems.Start">
             @if (_keywords != null)
 
             {
-                <RadzenText Text="Select keywords" TextStyle="TextStyle.Subtitle2"/>
-                <RadzenStack Style="width:350px;" Gap="0.2rem">
-                    @foreach (var keyword in _keywords.Keywords)
+                <div style="border-color: #48494A;">
+                <RadzenText Text="Select keywords to publish" TextStyle="TextStyle.H6"/>
+                
+                <RadzenStack Gap="0.2rem" Style="height: 50%; overflow: auto" >
+                    @foreach (var keyword in _keywords.Keywords.Where(x => !x.IsPublished))
                     {
                         <RadzenStack Orientation="Orientation.Vertical">
 
                             <RadzenCard Style="cursor: pointer;">
                                 <RadzenStack Orientation="Orientation.Horizontal">
-                                    <RadzenLabel Style="width:65%;">@(keyword.Content)</RadzenLabel>
+                                    <RadzenLabel Style="width:85%;">@(keyword.Content)</RadzenLabel>
                                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-                                        <RadzenLabel Text="Publish"/>
                                         <RadzenSwitch Change=@(args => ChangePublishState(keyword)) Value="@keyword.IsPublished"/>
                                     </RadzenStack>
                                 </RadzenStack>
                             </RadzenCard>
                         </RadzenStack>
                     }
-                    <RadzenPager Density="Density.Compact" ShowPagingSummary="true" PagingSummaryFormat="" HorizontalAlign="HorizontalAlign.Center" Count="@_count" PageSize="@pageSize" PageNumbersCount="4" PageChanged="@PageChanged"/>
+                    <RadzenPager Density="Density.Compact" ShowPagingSummary="true" PagingSummaryFormat="" Count="@_count" PageSize="@pageSize" PageNumbersCount="4" PageChanged="@PageChanged"/>
                 </RadzenStack>
+                </div>
+              
             }
             else if (_indexerProgress != null)
             {
@@ -72,6 +88,7 @@
             }
         </RadzenStack>
     </RadzenStack>
+    
     }
 else
 {
@@ -83,6 +100,7 @@ else
     [Parameter]
     public Guid VideoId { get; set; }
 
+    private string? activeBreakpoint { get; set; }
     private SwapVideos.API.Client.Generated.Video? _video;
     IndexerProgress? _indexerProgress;
     private double _progress;
@@ -90,8 +108,9 @@ else
     private int _count;
     private int _currentPage;
     private bool _disableIndexButton;
-    int pageSize = 10;
-    string pagingSummaryFormat = "(total {2} keywords)";
+    private int pageSize = 50;
+    private string pagingSummaryFormat = "(total {2} keywords)";
+    private List<Keyword> _publishedKeywords = new();
 
 
     protected override async Task OnParametersSetAsync()
@@ -110,6 +129,7 @@ else
         try
         {
             _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+            _publishedKeywords = _keywords.Keywords.Where(keyword => keyword.IsPublished).ToList();
             _count = _keywords.TotalAmount;
         }
         catch (ApiException e) when (e.StatusCode == 404)
@@ -187,6 +207,7 @@ else
             VideoId = VideoId
         };
         _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+        _publishedKeywords = _keywords.Keywords.Where(x => x.IsPublished).ToList();
         await InvokeAsync(StateHasChanged);
     }
 
@@ -202,5 +223,7 @@ else
             VideoId = VideoId
         };
         _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+        _publishedKeywords = _keywords.Keywords.Where(x => x.IsPublished).ToList();
     }
+}
 }

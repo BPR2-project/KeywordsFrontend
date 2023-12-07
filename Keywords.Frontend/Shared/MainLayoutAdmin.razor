@@ -1,5 +1,4 @@
 ﻿@inherits LayoutComponentBase
-
 <PageTitle>Keywords.Frontend</PageTitle>
 <RadzenLayout>
     <RadzenHeader>
@@ -21,11 +20,15 @@
             <RadzenPanelMenuItem Text="Something"/>
         </RadzenPanelMenu>
     </RadzenSidebar>
+   
     <RadzenBody Style="background-color: #F1F5F9">
-        <div class="rz-p-4">
-            @Body
-        </div>
+        <RadzenStack AlignItems="AlignItems.Center">
+            <div class="center">
+                @Body
+            </div>
+           </RadzenStack>
     </RadzenBody>
+
     <RadzenFooter Style="text-align: center">
     </RadzenFooter>
 </RadzenLayout>
