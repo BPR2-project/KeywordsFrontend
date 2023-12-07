@@ -55,7 +55,7 @@ else
     public Guid VideoId { get; set; }
 
     private SwapVideos.API.Client.Generated.Video? _video;
-    IndexerResponse? _indexerResponse;
+    IndexerProgress? _indexerResponse;
     private double _progress;
     private PaginatedKeywordsResponse? _keywords;
     private int _count;
@@ -112,7 +112,7 @@ else
         {
             _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
             _progress = ToDouble(_indexerResponse.ProcessingProgress);
-            if (_indexerResponse.State is IndexerResponseState.Succeeded)
+            if (_indexerResponse.State is IndexerProgressState.Succeeded)
             {
                 await GetKeywordsAsync();
                 await InvokeAsync(StateHasChanged);
@@ -120,7 +120,7 @@ else
             }
 
             await InvokeAsync(StateHasChanged);
-            if (_indexerResponse.State is IndexerResponseState.Failed)
+            if (_indexerResponse.State is IndexerProgressState.Failed)
             {
                 break;
             }

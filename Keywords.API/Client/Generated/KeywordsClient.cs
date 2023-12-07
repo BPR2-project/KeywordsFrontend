@@ -544,27 +544,27 @@ namespace Keywords.API.Client.Generated
     public partial interface IIndexerClient
     {
         /// <summary>
-        /// Get a keyword list of the indexed video
+        /// Get the progress of the video indexer including key phrase extraction
         /// </summary>
         /// <remarks>
-        /// Get a keyword list of the indexed video
+        /// Get the progress of video indexing and key phrase extraction
         /// </remarks>
-        /// <param name="videoId">Video Id to get the video ocr for</param>
-        /// <returns>Ocr video found</returns>
+        /// <param name="videoId">Video Id to be indexed and analysed</param>
+        /// <returns>Indexing is successfully being processed</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<IndexerResponse> GetIndexerResponseAsync(System.Guid videoId);
+        System.Threading.Tasks.Task<IndexerProgress> GetIndexerProgressAsync(System.Guid videoId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get a keyword list of the indexed video
+        /// Get the progress of the video indexer including key phrase extraction
         /// </summary>
         /// <remarks>
-        /// Get a keyword list of the indexed video
+        /// Get the progress of video indexing and key phrase extraction
         /// </remarks>
-        /// <param name="videoId">Video Id to get the video ocr for</param>
-        /// <returns>Ocr video found</returns>
+        /// <param name="videoId">Video Id to be indexed and analysed</param>
+        /// <returns>Indexing is successfully being processed</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<IndexerResponse> GetIndexerResponseAsync(System.Guid videoId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<IndexerProgress> GetIndexerProgressAsync(System.Guid videoId, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// Index a video
@@ -625,30 +625,30 @@ namespace Keywords.API.Client.Generated
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
         /// <summary>
-        /// Get a keyword list of the indexed video
+        /// Get the progress of the video indexer including key phrase extraction
         /// </summary>
         /// <remarks>
-        /// Get a keyword list of the indexed video
+        /// Get the progress of video indexing and key phrase extraction
         /// </remarks>
-        /// <param name="videoId">Video Id to get the video ocr for</param>
-        /// <returns>Ocr video found</returns>
+        /// <param name="videoId">Video Id to be indexed and analysed</param>
+        /// <returns>Indexing is successfully being processed</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<IndexerResponse> GetIndexerResponseAsync(System.Guid videoId)
+        public virtual System.Threading.Tasks.Task<IndexerProgress> GetIndexerProgressAsync(System.Guid videoId)
         {
-            return GetIndexerResponseAsync(videoId, System.Threading.CancellationToken.None);
+            return GetIndexerProgressAsync(videoId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Get a keyword list of the indexed video
+        /// Get the progress of the video indexer including key phrase extraction
         /// </summary>
         /// <remarks>
-        /// Get a keyword list of the indexed video
+        /// Get the progress of video indexing and key phrase extraction
         /// </remarks>
-        /// <param name="videoId">Video Id to get the video ocr for</param>
-        /// <returns>Ocr video found</returns>
+        /// <param name="videoId">Video Id to be indexed and analysed</param>
+        /// <returns>Indexing is successfully being processed</returns>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<IndexerResponse> GetIndexerResponseAsync(System.Guid videoId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<IndexerProgress> GetIndexerProgressAsync(System.Guid videoId, System.Threading.CancellationToken cancellationToken)
         {
             if (videoId == null)
                 throw new System.ArgumentNullException("videoId");
@@ -689,7 +689,7 @@ namespace Keywords.API.Client.Generated
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<IndexerResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<IndexerProgress>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -1071,12 +1071,6 @@ namespace Keywords.API.Client.Generated
                         ProcessResponse(client_, response_);
 
                         var status_ = (int)response_.StatusCode;
-                        if (status_ == 100)
-                        {
-                            string responseText_ = ( response_.Content == null ) ? string.Empty : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
-                            throw new ApiException("The initial request has been accepted. Proceed with sending the rest of the data.", status_, responseText_, headers_, null);
-                        }
-                        else
                         if (status_ == 200)
                         {
                             var objectResponse_ = await ReadObjectResponseAsync<PronunciationAssessmentResponseDTO>(response_, headers_, cancellationToken).ConfigureAwait(false);
@@ -1477,26 +1471,14 @@ namespace Keywords.API.Client.Generated
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class IndexerResponse
+    public partial class IndexerProgress
     {
         [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         [Newtonsoft.Json.JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
-        public IndexerResponseState State { get; set; }
+        public IndexerProgressState State { get; set; }
 
         [Newtonsoft.Json.JsonProperty("processingProgress", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string ProcessingProgress { get; set; }
-
-        [Newtonsoft.Json.JsonProperty("keywords", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.Generic.List<Keyword> Keywords { get; set; }
-
-        private System.Collections.Generic.IDictionary<string, object> _additionalProperties;
-
-        [Newtonsoft.Json.JsonExtensionData]
-        public System.Collections.Generic.IDictionary<string, object> AdditionalProperties
-        {
-            get { return _additionalProperties ?? (_additionalProperties = new System.Collections.Generic.Dictionary<string, object>()); }
-            set { _additionalProperties = value; }
-        }
 
         public string ToJson()
         {
@@ -1504,17 +1486,17 @@ namespace Keywords.API.Client.Generated
             return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
 
         }
-        public static IndexerResponse FromJson(string data)
+        public static IndexerProgress FromJson(string data)
         {
 
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<IndexerResponse>(data, new Newtonsoft.Json.JsonSerializerSettings());
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<IndexerProgress>(data, new Newtonsoft.Json.JsonSerializerSettings());
 
         }
 
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.0.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public enum IndexerResponseState
+    public enum IndexerProgressState
     {
 
         [System.Runtime.Serialization.EnumMember(Value = @"Indexing")]
@@ -1523,11 +1505,11 @@ namespace Keywords.API.Client.Generated
         [System.Runtime.Serialization.EnumMember(Value = @"ExtractingKeyPhrases")]
         ExtractingKeyPhrases = 1,
 
-        [System.Runtime.Serialization.EnumMember(Value = @"Failed")]
-        Failed = 2,
-
         [System.Runtime.Serialization.EnumMember(Value = @"Succeeded")]
-        Succeeded = 3,
+        Succeeded = 2,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Failed")]
+        Failed = 3,
 
     }
 
