@@ -1,19 +1,30 @@
 ﻿@inherits LayoutComponentBase
-
 <PageTitle>Keywords.Frontend</PageTitle>
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0" Style="background-color: #1E293B">
+            <RadzenSidebarToggle Style="color: white;" Click="@(() => _sidebar1Expanded = !_sidebar1Expanded)" />
+            <AdminTopNav/>
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenSidebar @bind-Expanded="@_sidebar1Expanded">
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Home" Path="/" Icon="home"/>
+            <RadzenPanelMenuItem Text="Videos" Path="/admin"/>
+        </RadzenPanelMenu>
+    </RadzenSidebar>
+   
+    <RadzenBody Style="background-color: #F1F5F9">
+        <RadzenStack AlignItems="AlignItems.Center">
+            <div class="center">
+                @Body
+            </div>
+           </RadzenStack>
+    </RadzenBody>
+    <RadzenFooter Style="text-align: center">
+    </RadzenFooter>
+</RadzenLayout>
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+@code {
+    bool _sidebar1Expanded;
+}

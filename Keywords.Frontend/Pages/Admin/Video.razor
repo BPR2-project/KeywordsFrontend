@@ -4,49 +4,122 @@
 @inject IKeywordService _keywordService
 @inject ISwapVideoService _videoService
 @inject IIndexerService _indexerService
-
 <PageTitle>Video</PageTitle>
+
 @if (_video != null)
 {
-    <h1>@_video.Name</h1>
-    <p>Description: @_video.Description</p>
-                                       
-    @if (_keywords != null)
-    {
-        @foreach (var keyword in _keywords.Keywords)
-        {
-            <RadzenStack Orientation="Orientation.Vertical">
-                
-                <RadzenCard Style="width:100%; cursor: pointer; margin-top: 3px;">
-                    <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenLabel Style="width:50%;">@(keyword.Content)</RadzenLabel>
-                         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-                                <RadzenLabel Text="Publish" />
-                                <RadzenSwitch  Change=@(args =>  ChangePublishState(keyword)) Value="@keyword.IsPublished" />
+    <RadzenBreadCrumb Style="color: black !important">
+        <RadzenBreadCrumbItem Text="Videos" Path="/admin" />
+        <RadzenBreadCrumbItem Text="Video overview"/>
+    </RadzenBreadCrumb>
+    <RadzenStack Orientation="Orientation.Vertical" Style="margin-top: 2%;" >
+        <RadzenStack Orientation="Orientation.Vertical">
+            <RadzenStack  Orientation="Orientation.Horizontal">
+                <RadzenStack>
+                    <div class="col-md-9">
+                        <RadzenHtml>
+                            <video controls width="450" >
+                                <source src="@_video.VideoLink" type="video/mp4">
+                            </video>
+                        </RadzenHtml>
+                    </div>
+                </RadzenStack>
+                <RadzenStack Orientation="Orientation.Horizontal" Style="width: 100%">
+                    <RadzenCard Style="background-color:  #F1F5F9; width: 40%">
+                        <RadzenStack Orientation="Orientation.Vertical">
+                            <RadzenText TextStyle="TextStyle.Body1"><b>Title: </b>@_video.Name</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body1"><b>Description: </b> @_video.Description</RadzenText>
+                        </RadzenStack>
+                    </RadzenCard>
+                    <RadzenStack Orientation="Orientation.Horizontal" Style="width: 60%" JustifyContent="JustifyContent.SpaceBetween">
+                        <RadzenCard Style="background-color:  #F1F5F9;  width: 50%">
+                            <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+                                <RadzenText TextStyle="TextStyle.H6" TextAlign="TextAlign.Center">Status:</RadzenText>
+                                <RadzenText TextStyle="TextStyle.H4" TextAlign="TextAlign.Center">@State</RadzenText>
                             </RadzenStack>
+                        </RadzenCard>
+                        <RadzenCard Style="background-color:  #F1F5F9; width: 50%">
+                            <RadzenStack Orientation="Orientation.Vertical">
+                                <RadzenText TextStyle="TextStyle.H6" TextAlign="TextAlign.Center">Belongs to Module:</RadzenText>
+                                <RadzenText TextStyle="TextStyle.H1" TextAlign="TextAlign.Center">4</RadzenText>
+                            </RadzenStack>
+                        </RadzenCard>
                     </RadzenStack>
-                </RadzenCard>
-            </RadzenStack>
-   
-        }
-        <RadzenPager ShowPagingSummary="true" PagingSummaryFormat="@pagingSummaryFormat" HorizontalAlign="HorizontalAlign.Right" Count="@_count" PageSize="@pageSize" PageNumbersCount="5" PageChanged="@PageChanged"/>
-    }
-    else if (_indexerResponse != null)
-    {
-        <h3>Processing video</h3>
-        <p><strong>Status: @_indexerResponse.State</strong></p>
-        <RadzenProgressBarCircular Style="height: 100px; width: 100px;" ProgressBarStyle="ProgressBarStyle.Primary" @bind-Value="@_progress" Mode="ProgressBarMode.Indeterminate"/>
+                </RadzenStack>
+                </RadzenStack>
+    </RadzenStack>
+        <RadzenStack>
+            @if (_keywordsResponse != null)
 
+            {
+                <RadzenStack Style="width: 90%">
+                <RadzenStack Orientation="Orientation.Vertical">
+                            <RadzenText TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Style="margin-top: 1%">Keywords Panel</RadzenText>
+                            @if (_showOnlyPublished)
+                            {
+                                <RadzenStack Style="width: 100%" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround">
+                                    <RadzenCard Style="width:50%; background-color: white;" @onclick="() => _showOnlyPublished = false">
+                                        <RadzenText TextAlign="TextAlign.Center"> All keywords (@Keywords.Count)</RadzenText> 
+                                    </RadzenCard>
+                                    <RadzenCard Style="width: 50%; background-color: darkorange"  @onclick="() => _showOnlyPublished = true">
+                                        <RadzenText TextAlign="TextAlign.Center">Published Keywords (@TotalPublished) </RadzenText> 
+                                    </RadzenCard>
+                                </RadzenStack>
+                            
+                            }
+                            else
+                            {
+                                <RadzenStack Style="width: 100%" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround">
+                                    <RadzenCard Style="width: 50%; background-color: darkorange" @onclick="() => _showOnlyPublished = false">
+                                        <RadzenText TextAlign="TextAlign.Center"> All keywords (@Keywords.Count)</RadzenText> 
+                                    </RadzenCard>
+                                    <RadzenCard Style="width: 50%; background-color: white"  @onclick="() => _showOnlyPublished = true">
+                                        <RadzenText TextAlign="TextAlign.Center">Published Keywords (@TotalPublished) </RadzenText> 
+                                    </RadzenCard>
+                                </RadzenStack>
+                            }
+                           </RadzenStack>    
+                    <RadzenStack Style="background-color:white; border-radius: 2%; height: 800px; overflow: auto" AlignItems="AlignItems.Center">
+                        <RadzenStack Style="margin: 13px" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+                            <RadzenStack  Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.Center" >
+                                @foreach (var keyword in ToShow)
+                                {
+                                    <RadzenCard Style="background-color: #F1F5F9; width: 270px; height: 80px">
+                                        <RadzenStack Orientation="Orientation.Horizontal">
+                                            <RadzenLabel Text="@keyword.Content" Style="width: 95%; flex-wrap: wrap !important"/>
+                                            <RadzenCheckBox TValue="bool" Value=@keyword.IsPublished Change=@(_ => ChangePublishState(keyword))/>
+                                        </RadzenStack>
+                                    </RadzenCard>
+                                }
+                            </RadzenStack>
+                        </RadzenStack>
+                    </RadzenStack>
+                    </RadzenStack>
+              
+            }
+            else if (_indexerProgress != null)
+            {
+                <RadzenStack JustifyContent="JustifyContent.Center"  AlignItems="AlignItems.Center" Style="margin-top: 10%">
+                    <RadzenText TextStyle="TextStyle.H6">Processing video</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body1"><strong>Status: </strong> @_indexerProgress.State</RadzenText>
+                    <RadzenProgressBarCircular Style="height: 250px; width: 250px;" ProgressBarStyle="ProgressBarStyle.Primary" @bind-Value="@Progress" Mode="ProgressBarMode.Indeterminate"/>
+                </RadzenStack>
+            }
+            else
+            {
+                <RadzenStack JustifyContent="JustifyContent.Center"  AlignItems="AlignItems.Center" Style="margin-top: 10%">`
+                <RadzenText> Oops - No keywords yet </RadzenText>
+                <RadzenButton Disabled="@_disableIndexButton" Text="Index" ButtonStyle="ButtonStyle.Primary" Click="IndexVideo"/>
+                </RadzenStack>
+            }
+        </RadzenStack>
+    </RadzenStack>
+    
     }
-    else
-    {
-        <RadzenButton Disabled="@_disableIndexButton" Text="Index" ButtonStyle="ButtonStyle.Primary" Click="IndexVideo"/>
-
-    }
-}
 else
-{
-    <h1>Loading</h1>
+{  <RadzenStack JustifyContent="JustifyContent.Center"  AlignItems="AlignItems.Center" Style="margin-top: 10%">
+   <RadzenProgressBarCircular Style="height: 300px; width: 300px;" ProgressBarStyle="ProgressBarStyle.Primary" Mode="ProgressBarMode.Indeterminate"/>
+   </RadzenStack>
 }
 
 @code
@@ -55,18 +128,61 @@ else
     public Guid VideoId { get; set; }
 
     private SwapVideos.API.Client.Generated.Video? _video;
-    IndexerProgress? _indexerResponse;
-    private double _progress;
-    private PaginatedKeywordsResponse? _keywords;
-    private int _count;
-    private int _currentPage;
+    IndexerProgress? _indexerProgress;
     private bool _disableIndexButton;
-    int pageSize = 20;
-    string pagingSummaryFormat = "Displaying page {0} of {1} (total {2} keywords)";
+    private int pageSize = 50;
+    
+    private PaginatedKeywordsResponse? _keywordsResponse;
+    private List<Keyword> Keywords => _keywordsResponse?.Keywords.OrderBy(x => x.Content).ToList() ?? new List<Keyword>();
+    private List<Keyword> ToShow => _showOnlyPublished ? Keywords.Where(keyword => keyword.IsPublished).ToList() : Keywords;
+    
+    private bool _showOnlyPublished;
+    private int TotalPublished => Keywords.Count(x => x.IsPublished);
+    
+    private string State
+    {
+        get
+        {
+            return _indexerProgress?.State switch
+            {
+                IndexerProgressState.Indexing => "Indexing",
+                IndexerProgressState.ExtractingKeyPhrases => "Extracting Keywords",
+                IndexerProgressState.Succeeded => "Indexed",
+                IndexerProgressState.Failed => "Failed to index",
+                _ => "Not indexed"
+            };
+        }
+    }
+    
+    private double Progress 
+    {
+        set
+        {
+            // Ignored
+        }
+        get
+        {
+            var toConvert = _indexerProgress?.ProcessingProgress?.Trim('%');
+            if (double.TryParse(toConvert, out var result))
+            {
+                return result;
+            }
 
-
+            return 99;
+        }
+    }
+    
     protected override async Task OnParametersSetAsync()
     {
+        try
+        {
+            _video = await _videoService.GetVideoAsync(VideoId);
+        }
+        catch (ApiException e) when (e.StatusCode == 404)
+        {
+            // Ignored
+        }
+        await GetKeywordsAsync();
         await IndexerTrigger();
     }
     
@@ -80,29 +196,25 @@ else
         };
         try
         {
-            _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-            _count = _keywords.TotalAmount;
+            _keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+            _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
         }
         catch (ApiException e) when (e.StatusCode == 404)
         {
             try
             {
-                _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
-                _progress = ToDouble(_indexerResponse.ProcessingProgress);
+                _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
             }
             catch (ApiException ex) when (ex.StatusCode == 404)
             {
-                 // Ignored
+                _indexerProgress = null;
             }
         }
     }
 
     private async Task IndexerTrigger()
     {
-        _video = await _videoService.GetVideoAsync(VideoId);
-        await GetKeywordsAsync();
-
-        if (_keywords != null || _indexerResponse == null)
+        if (_keywordsResponse != null || _indexerProgress == null)
         {
             return;
         }
@@ -110,9 +222,8 @@ else
         using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
         while (await periodicTimer.WaitForNextTickAsync())
         {
-            _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
-            _progress = ToDouble(_indexerResponse.ProcessingProgress);
-            if (_indexerResponse.State is IndexerProgressState.Succeeded)
+            _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
+            if (_indexerProgress.State is IndexerProgressState.Succeeded)
             {
                 await GetKeywordsAsync();
                 await InvokeAsync(StateHasChanged);
@@ -120,10 +231,8 @@ else
             }
 
             await InvokeAsync(StateHasChanged);
-            if (_indexerResponse.State is IndexerProgressState.Failed)
-            {
-                break;
-            }
+            if (_indexerProgress.State is not IndexerProgressState.Failed) continue;
+            break;
         }
     }
 
@@ -133,32 +242,9 @@ else
         {
             await _indexerService.IndexVideoAsync(_video.Id.Value, _video.VideoLink);
             _disableIndexButton = true;
-            _indexerResponse = await _indexerService.GetIndexerResponseAsync(VideoId);
+            _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
             await IndexerTrigger();
         }
-    }
-
-    private static double ToDouble(string? progress)
-    {
-        var toConvert = progress?.Trim('%');
-        if (double.TryParse(toConvert, out var result))
-        {
-            return result;
-        }
-        return 98;
-    }
-
-    private async void PageChanged(PagerEventArgs args)
-    {
-        _currentPage = args.PageIndex;
-        var keywordsRequest = new PaginatedKeywordsRequest
-        {
-            Page = args.PageIndex,
-            Size = args.Top,
-            VideoId = VideoId
-        };
-        _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-        await InvokeAsync(StateHasChanged);
     }
 
     private async Task ChangePublishState(Keyword keyword)
@@ -168,10 +254,10 @@ else
         await _keywordService.PublishKeywordAsync(keywordId, keyword.IsPublished);
         var keywordsRequest = new PaginatedKeywordsRequest
         {
-            Page = _currentPage,
+            Page = 0,
             Size = pageSize,
             VideoId = VideoId
         };
-        _keywords = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+        _keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
     }
 }
