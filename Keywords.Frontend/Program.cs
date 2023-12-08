@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Keywords.Services;
 using Keywords.Services.Interfaces;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ builder.Services.AddScoped<ISwapVideoService, SwapVideoService>();
 builder.Services.AddScoped<ISpeechService, SpeechService>();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.Configure<HubOptions>(opt => { opt.MaximumReceiveMessageSize = null; });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
