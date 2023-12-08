@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Keywords.Services;
 using Keywords.Services.Interfaces;
+using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,7 @@ builder.Services.AddScoped<ISwapVideoService, SwapVideoService>();
 builder.Services.AddScoped<ISpeechService, SpeechService>();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddScoped<DialogService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

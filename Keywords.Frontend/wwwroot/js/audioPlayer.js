@@ -15,19 +15,26 @@ window.player = {
             }, true
         );
     },
+    changeButton: async function () {
+        var recordingSpan = document.createElement('span');
+        recordingSpan.setAttribute('class', 'spinner-grow spinner-grow-sm');
+        recordingSpan.setAttribute('id', 'recording-spinner')
+
+        var wrapper = document.getElementById("recording-button");
+        wrapper.appendChild(recordingSpan);
+    },
     recording: async function (dotnetRef, id) {
         let audioRecorder;
         let blob;
-
+                
         window.fileDataStream = async function (){            
-            const x = await blob.arrayBuffer();
+            let x = await blob.arrayBuffer();
             return new Uint8Array(x);
         }
         
         navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
         navigator.mediaDevices.getUserMedia({audio: true})
             .then(stream => {
-                
                 audioRecorder = new RecordRTC(stream, {
                     type: 'audio',
                     mimeType: 'audio/wav',
@@ -36,16 +43,21 @@ window.player = {
                     desiredSampRate: 16000,
                     numberOfAudioChannels: 1,
                 })
-
+                
                 audioRecorder.startRecording();
                 
                 setTimeout(() =>{
                     audioRecorder.stopRecording(async function(){
                         blob = audioRecorder.getBlob();
                         await dotnetRef.invokeMethodAsync('Receive', id);
+                        var recordingSpan = document.getElementById('recording-spinner')
+                        var button = document.getElementById("recording-button");
+                        button.removeChild(recordingSpan);
+                        stream.getAudioTracks().forEach(track => {
+                            track.stop();
+                        });
                     });
                 },3000);
-
             }).catch(err => {
             // pushErrorToBlazor(err);
         });
