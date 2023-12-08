@@ -52,17 +52,16 @@
             @if (_keywordsResponse != null)
 
             {
-                <RadzenStack Style="margin-top: 2%; background-color:white; border-radius: 3%" JustifyContent = "JustifyContent.Center">
-                   
-                        <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center">
+                <RadzenStack Style="width: 90%">
+                <RadzenStack Orientation="Orientation.Vertical">
                             <RadzenText TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Style="margin-top: 1%">Keywords Panel</RadzenText>
                             @if (_showOnlyPublished)
                             {
                                 <RadzenStack Style="width: 100%" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround">
-                                    <RadzenCard Style="width: 48%; background-color: white;" @onclick="() => _showOnlyPublished = false">
-                                        <RadzenText TextAlign="TextAlign.Center"> All keywords</RadzenText> 
+                                    <RadzenCard Style="width:50%; background-color: white;" @onclick="() => _showOnlyPublished = false">
+                                        <RadzenText TextAlign="TextAlign.Center"> All keywords (@Keywords.Count)</RadzenText> 
                                     </RadzenCard>
-                                    <RadzenCard Style="width: 48%; background-color: darkorange"  @onclick="() => _showOnlyPublished = true">
+                                    <RadzenCard Style="width: 50%; background-color: darkorange"  @onclick="() => _showOnlyPublished = true">
                                         <RadzenText TextAlign="TextAlign.Center">Published Keywords (@TotalPublished) </RadzenText> 
                                     </RadzenCard>
                                 </RadzenStack>
@@ -71,29 +70,31 @@
                             else
                             {
                                 <RadzenStack Style="width: 100%" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround">
-                                    <RadzenCard Style="width: 48%; background-color: darkorange" @onclick="() => _showOnlyPublished = false">
-                                        <RadzenText TextAlign="TextAlign.Center"> All keywords</RadzenText> 
+                                    <RadzenCard Style="width: 50%; background-color: darkorange" @onclick="() => _showOnlyPublished = false">
+                                        <RadzenText TextAlign="TextAlign.Center"> All keywords (@Keywords.Count)</RadzenText> 
                                     </RadzenCard>
-                                    <RadzenCard Style="width: 48%; background-color: white"  @onclick="() => _showOnlyPublished = true">
+                                    <RadzenCard Style="width: 50%; background-color: white"  @onclick="() => _showOnlyPublished = true">
                                         <RadzenText TextAlign="TextAlign.Center">Published Keywords (@TotalPublished) </RadzenText> 
                                     </RadzenCard>
                                 </RadzenStack>
                             }
                            </RadzenStack>    
-                    <RadzenStack Style="margin: 2%" JustifyContent="JustifyContent.Center">
-                        <RadzenStack  Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap" >
-                        @foreach (var keyword in ToShow)
-                        {
-                            <RadzenCard Style="background-color: #F1F5F9; width: 300px; height: 80px">
-                                <RadzenStack Orientation="Orientation.Horizontal">
-                                    <RadzenLabel Text="@keyword.Content" Style="width: 95%; flex-wrap: wrap !important"/>
-                                    <RadzenCheckBox TValue="bool" Value=@keyword.IsPublished Change=@(_ => ChangePublishState(keyword))/>
-                                </RadzenStack>
-                            </RadzenCard>
-                        }
+                    <RadzenStack Style="background-color:white; border-radius: 2%; height: 800px; overflow: auto" AlignItems="AlignItems.Center">
+                        <RadzenStack Style="margin: 13px" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+                            <RadzenStack  Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.Center" >
+                                @foreach (var keyword in ToShow)
+                                {
+                                    <RadzenCard Style="background-color: #F1F5F9; width: 270px; height: 80px">
+                                        <RadzenStack Orientation="Orientation.Horizontal">
+                                            <RadzenLabel Text="@keyword.Content" Style="width: 95%; flex-wrap: wrap !important"/>
+                                            <RadzenCheckBox TValue="bool" Value=@keyword.IsPublished Change=@(_ => ChangePublishState(keyword))/>
+                                        </RadzenStack>
+                                    </RadzenCard>
+                                }
+                            </RadzenStack>
                         </RadzenStack>
                     </RadzenStack>
-                </RadzenStack>
+                    </RadzenStack>
               
             }
             else if (_indexerProgress != null)
@@ -132,7 +133,7 @@ else
     private int pageSize = 50;
     
     private PaginatedKeywordsResponse? _keywordsResponse;
-    private List<Keyword> Keywords => _keywordsResponse?.Keywords ?? new List<Keyword>();
+    private List<Keyword> Keywords => _keywordsResponse?.Keywords.OrderBy(x => x.Content).ToList() ?? new List<Keyword>();
     private List<Keyword> ToShow => _showOnlyPublished ? Keywords.Where(keyword => keyword.IsPublished).ToList() : Keywords;
     
     private bool _showOnlyPublished;
