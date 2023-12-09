@@ -1,10 +1,10 @@
 @page "/video"
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
-@using System.Reflection.Metadata
 @inject IKeywordService KeywordService
 @inject IJSRuntime JS
 @inject ISpeechService SpeechService
+@inject DialogService DialogService
 
 <div class="py-3 px-2 py-lg-4 px-lg-5" style="background-color:rgb(248 250 252);">
     <RadzenBreadCrumb>
@@ -78,22 +78,10 @@
                 @foreach (var keyword in _keywords!)
                 {
                     <div class="d-inline-block mx-5 my-3">
-                        <span class="ps-2" id=@string.Concat(keyword.Id, "play")>@keyword.Content</span>
+                        <span class="ps-2">@keyword.Content</span>
                         <img src="audio.svg" alt="audio" @onclick="@(() => PlayAudio(keyword.AudioLink, keyword.Id))" id="@keyword.Id" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
-                        <img src="mic.svg" alt="record" @onclick="@(() => RecordAudio(keyword.Id, keyword.Content))" id=@string.Concat(keyword.Id, "start") Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
+                        <img src="mic.svg" alt="record" @onclick="@(() => OpenRecordingDialog(keyword.Id, keyword.Content))" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
                     </div>
-                    
-                    @* <div class="@(_isAssessed ? "d-block" : "d-none")"> *@
-                    @* *@
-                    @*             <span>@_assessmentDto.AccuracyScore</span> *@
-                    @*             <span>@_assessmentDto.CompletenessScore</span> *@
-                    @*             <span>@_assessmentDto.FluencyScore</span> *@
-                    @*             <span>@_assessmentDto.PronScore</span> *@
-                    @*             <span>@_assessmentDto.Lexical</span> *@
-                    @*             <span>@_assessmentDto.Confidence</span> *@
-                    @*             <span>@_assessmentDto.Display</span> *@
-                    @* *@
-                    @* </div> *@
                 }
             </div>
         </RadzenTabsItem>
@@ -109,13 +97,20 @@
 @code {
     private List<Keyword> _keywords;
     private DotNetObjectReference<SingleVideo>? dotnetRef;
-    // private PronunciationAssessmentDTO _assessmentDto;
     private bool _isAssessed;
     string assessedKeyWord;
     int score;
+    bool recording = false;
+    private string assessment;
+    private PronunciationAssessmentDTO? _assessmentDto;
+    private bool _disabled;
+    private bool _jsInitialized;
+
 
     protected override async Task OnInitializedAsync()
     {
+        _disabled = true;
+        _assessmentDto = null;
         _keywords = new List<Keyword>();
 
         Guid.TryParse("998f1901-99f0-418e-82c1-c18ba368d295", out var guid);
@@ -129,7 +124,7 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if(firstRender)
+        if (firstRender)
             dotnetRef = DotNetObjectReference.Create(this);
     }
 
@@ -138,57 +133,92 @@
         await JS.InvokeVoidAsync("player.play", source, id);
     }
 
-    private async Task RecordAudio(Guid id, string keyword)
+    private async Task OpenRecordingDialog(Guid id, string keyword)
     {
         assessedKeyWord = keyword;
+        var result = await DialogService.OpenAsync("Pronunciation Practice", ds =>
+            @<RadzenStack Gap="1.5rem">
+                <p>Practice your pronunciation of <b>@assessedKeyWord</b></p>
+                <p>Pronunciation Assessment: @assessment</p>
+                <div class="container-fluid d-flex flex-row justify-content-evenly ">
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Secondary" Value="@(_assessmentDto != null ? _assessmentDto.Confidence * 100 : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                        <Template>Confidence</Template>
+                    </RadzenProgressBarCircular>
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Danger" Value="@(_assessmentDto != null ? _assessmentDto.CompletenessScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                        <Template>Completeness</Template>
+                    </RadzenProgressBarCircular>
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Success" Value="@(_assessmentDto != null ? _assessmentDto.AccuracyScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                        <Template>Accuracy</Template>
+                    </RadzenProgressBarCircular>
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Light" Value="@(_assessmentDto != null ? _assessmentDto.FluencyScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                        <Template>Fluency</Template>
+                    </RadzenProgressBarCircular>
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="@(_assessmentDto != null ? _assessmentDto.PronScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                        <Template>Pronunciation</Template>
+                    </RadzenProgressBarCircular>
+                </div>
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenButton Text="Record" ButtonStyle="ButtonStyle.Primary" id="@string.Concat(id, "start")" Click="@(() => RefreshAssessments(id))"/>
+                        <RadzenButton Text="Play Recording" ButtonStyle="ButtonStyle.Light" id="@string.Concat(id, "play")" Disabled="@_disabled"/>
+                        <RadzenButton Text="Close" Click="@CloseModal" ButtonStyle="ButtonStyle.Light"/>
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenStack>, new DialogOptions() { ShowClose = false });
+    }
+
+    private async Task RecordAudio(Guid id)
+    {
         await JS.InvokeVoidAsync("player.recording", dotnetRef, id);
     }
 
     [JSInvokable]
-    public async Task GetAssessment(Blob blob, Guid id)
+    public async Task Receive(Guid id, string blobUrl)
     {
-        var x = blob;
+        recording = false;
+        var dataReference =
+            await JS.InvokeAsync<IJSStreamReference>("fileDataStream", blobUrl);
         
+        using (var dataReferenceStream =
+            await dataReference.OpenReadStreamAsync(maxAllowedSize: 10_000_000))
+        {
+            var keyword = _keywords.First(a => a.Id == id);
+
+            var stream = new MemoryStream();
+
+            await dataReferenceStream.CopyToAsync(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            var result = await SpeechService.CreatePronunciationAssessmentAsync(stream, keyword.Language, keyword.Content);
+            score = (int)result.NBest[0].PronScore;
+            _assessmentDto = result.NBest.FirstOrDefault();
+            _disabled = false;
+            assessment = score > 80 ? "Great Job" : "Try again";
+            DialogService.Refresh();
+        }
     }
 
-    [JSInvokable]
-    public async Task Receive(Guid id)
+    private async Task RefreshAssessments(Guid id)
     {
-        var dataReference =
-            await JS.InvokeAsync<IJSStreamReference>("fileDataStream");
-        using var dataReferenceStream =
-            await dataReference.OpenReadStreamAsync(maxAllowedSize: 10_000_000);
-        
-        var keyword = _keywords.First(a => a.Id == id);
+        _assessmentDto = null;
+        if (!_jsInitialized)
+            await RecordAudio(id);
 
-        using (var stream = new MemoryStream())
-        {
-            await dataReferenceStream.CopyToAsync(stream);
-            
-            stream.Seek(0, SeekOrigin.Begin);
+        _jsInitialized = true;
+        recording = true;
+        DialogService.Refresh();
+    }
 
-            // var writer = new WaveFileWriter(stream, new WaveFormat());
-            // writer.WaveFormat.AsStandardWaveFormat();
-            // writer.Flush();
-            
-            // string filePath = Path.Combine("test.wav");
-            //
-            // using (var fileStream = new FileStream(filePath, FileMode.Create))
-            // {
-            //     await stream.CopyToAsync(fileStream);
-            // }
-            
-            // var file = new FileParameter(stream, "body");
-            var result = await SpeechService.CreatePronunciationAssessmentAsync(stream, keyword.Language, keyword.Content);
-            // _assessmentDto = result.NBest.FirstOrDefault();
-            _isAssessed = true;
-            score = (int) result.NBest[0].PronScore;
-            Console.Write(score);
-        }
+    public async Task CloseModal()
+    {
+        _jsInitialized = false;
+        assessment = "";
+        DialogService.Close(false);
+        _assessmentDto = null;
     }
 
     public void Dispose()
     {
         dotnetRef.Dispose();
     }
+
 }
