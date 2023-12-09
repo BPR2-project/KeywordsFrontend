@@ -4,6 +4,7 @@
 @inject IKeywordService _keywordService
 @inject ISwapVideoService _videoService
 @inject IIndexerService _indexerService
+@inject ITextToSpeechService TextToSpeechService
 <PageTitle>Video</PageTitle>
 
 @if (_video != null)
@@ -259,5 +260,8 @@ else
             VideoId = VideoId
         };
         _keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+        if (!keyword.IsPublished)
+            return;
+        await TextToSpeechService.CreateAudioForKeyword(keyword.Id);
     }
 }
