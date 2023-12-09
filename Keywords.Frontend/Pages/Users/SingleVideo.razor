@@ -103,6 +103,7 @@
     bool recording = false;
     private string assessment;
     private PronunciationAssessmentDTO? _assessmentDto;
+    private bool _disabled;
 
     protected override async Task OnInitializedAsync()
     {
@@ -131,6 +132,7 @@
 
     private async Task OpenRecordingDialog(Guid id, string keyword)
     {
+        _disabled = false;
         assessedKeyWord = keyword;
         var result = await DialogService.OpenAsync("Pronunciation Practice", ds =>
             @<RadzenStack Gap="1.5rem">
@@ -154,8 +156,8 @@
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
                     <RadzenStack Orientation="Orientation.Horizontal">
                         @* <RadzenButton Text="Record" ButtonStyle="ButtonStyle.Primary" id="@string.Concat(id,"start")" Click="@RefreshAssessments"/> *@
-                        <button id="recording-button" class="btn btn-primary" type="button" @onclick="() => RecordAudio(id)" style="background-color: darkorange; color: white;">
-                            RECORD
+                        <button id="recording-button" class="btn btn-primary" type="button" disabled="@_disabled" @onclick="@(() => RecordAudio(id))" style="background-color: darkorange; color: white;">
+                            click once to start js 
                         </button>
                         <RadzenButton Text="Close" Click="@CloseModal" ButtonStyle="ButtonStyle.Light"/>
                         <RadzenButton Text="Play Recording" ButtonStyle="ButtonStyle.Light" id="@string.Concat(id, "play")"/>
@@ -167,6 +169,9 @@
 
     private async Task RecordAudio(Guid id)
     {
+        _disabled = true;
+        StateHasChanged();
+        
         await JS.InvokeVoidAsync("player.changeButton");
         await JS.InvokeVoidAsync("player.recording", dotnetRef, id);
     }
