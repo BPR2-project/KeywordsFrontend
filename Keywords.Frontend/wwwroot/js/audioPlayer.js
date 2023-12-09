@@ -34,8 +34,9 @@ window.player = {
         var recordingSpan = document.getElementById('recording-spinner')
         var button = document.getElementById("recording-button");
         
-        window.fileDataStream = async function () {
-            let x = await blob.arrayBuffer();
+        window.fileDataStream = async function (blobUrl)
+        {   let y = await fetch(blobUrl).then(r => r.blob());
+            let x = await y.arrayBuffer();
             return new Uint8Array(x);
         }
         playButton.addEventListener('click', () => {
@@ -70,7 +71,8 @@ window.player = {
 
                     audioRecorder.setRecordingDuration(3000, async function () {
                         blob = audioRecorder.getBlob();
-                        await dotnetRef.invokeMethodAsync('Receive', id);
+                        const blobUrl = URL.createObjectURL(blob);
+                        await dotnetRef.invokeMethodAsync('Receive', id, blobUrl);
                         startButton.removeChild(recordingSpan);
                         StopRecordingStream();
                     });
