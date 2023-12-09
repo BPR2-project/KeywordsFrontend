@@ -25,4 +25,10 @@
       <_JsFileModuleStaticWebAsset Include="wwwroot\js\audioPlayer.js" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Pages\Admin\Video.css">
+        <DependentUpon>Video.razor</DependentUpon>
+      </None>
+    </ItemGroup>
+
 </Project>
