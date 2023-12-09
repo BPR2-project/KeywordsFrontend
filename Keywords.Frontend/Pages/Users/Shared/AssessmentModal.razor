@@ -12,7 +12,9 @@
                 <p>Practice your pronunciation of <b>@_assessmentDto</b></p>
                 <p>Pronunciation Assessment: @_assessmentDto</p>
                 <div class="container-fluid d-flex flex-row justify-content-evenly">
-                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Secondary" Value="@(_assessmentDto != null ? _assessmentDto.Confidence : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(_assessmentDto != null ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium"><Template>Confidence</Template></RadzenProgressBarCircular>
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Secondary" Value="@(_assessmentDto != null ? _assessmentDto.Confidence : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(_assessmentDto != null ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                        <Template>Confidence</Template>
+                    </RadzenProgressBarCircular>
                     <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Danger" Value="@(_assessmentDto != null ? _assessmentDto.CompletenessScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(_assessmentDto != null ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
                         <Template>Completeness</Template>
                     </RadzenProgressBarCircular>

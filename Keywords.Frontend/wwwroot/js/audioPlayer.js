@@ -20,11 +20,11 @@ window.player = {
         recordingSpan.setAttribute('class', 'spinner-grow spinner-grow-sm');
         recordingSpan.setAttribute('id', 'recording-spinner')
 
-        var wrapper = document.getElementById("recording-button");
+        var wrapper = document.getElementById(id + 'start');
         wrapper.appendChild(recordingSpan);
     },
     recording: async function (dotnetRef, id) {
-        // this.changeButton(id);
+        this.changeButton(id);
         let audioRecorder;
         let blob;
 
@@ -33,7 +33,7 @@ window.player = {
 
         var recordingSpan = document.getElementById('recording-spinner')
         var button = document.getElementById("recording-button");
-
+        
         window.fileDataStream = async function () {
             let x = await blob.arrayBuffer();
             return new Uint8Array(x);
@@ -64,14 +64,14 @@ window.player = {
                     })
 
                     blob = new Blob();
-                    button.appendChild(recordingSpan);
+                    startButton.appendChild(recordingSpan);
 
                     audioRecorder.reset();
 
                     audioRecorder.setRecordingDuration(3000, async function () {
                         blob = audioRecorder.getBlob();
                         await dotnetRef.invokeMethodAsync('Receive', id);
-                        button.removeChild(recordingSpan);
+                        startButton.removeChild(recordingSpan);
                         StopRecordingStream();
                     });
                     
@@ -89,5 +89,7 @@ window.player = {
 
             window.streamReference = null;
         }
+
+        await StartRecording();
     }
 }
