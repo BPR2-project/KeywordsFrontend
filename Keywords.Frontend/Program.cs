@@ -25,6 +25,8 @@ builder.Services.AddScoped<ISpeechService, SpeechService>();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<DialogService>();
+
+builder.Services.AddSignalR(options => { options.MaximumReceiveMessageSize = Int64.MaxValue; });
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -44,5 +46,7 @@ app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/Users/Shared/_Host");
 app.MapFallbackToPage("/admin/{**slug}","/Admin/Shared/_Host");
+
+
 
 app.Run();

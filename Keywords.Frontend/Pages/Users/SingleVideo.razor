@@ -1,7 +1,6 @@
 @page "/video"
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
-@using System.Reflection.Metadata
 @inject IKeywordService KeywordService
 @inject IJSRuntime JS
 @inject ISpeechService SpeechService
@@ -79,14 +78,14 @@
                 @foreach (var keyword in _keywords!)
                 {
                     <div class="d-inline-block mx-5 my-3">
-                        <span class="ps-2" id=@string.Concat(keyword.Id, "play")>@keyword.Content</span>
+                        <span class="ps-2" >@keyword.Content</span>
                         <img src="audio.svg" alt="audio" @onclick="@(() => PlayAudio(keyword.AudioLink, keyword.Id))" id="@keyword.Id" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
-                        <img src="mic.svg" alt="record" @onclick="@(() => OpenRecordingDialog(keyword.Id, keyword.Content))" id=@string.Concat(keyword.Id, "start") Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
+                        <img src="mic.svg" alt="record" @onclick="@(() => OpenRecordingDialog(keyword.Id, keyword.Content))" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
                     </div>
                 }
             </div>
         </RadzenTabsItem>
-        <RadzenTabsItem Text="Practice" Style="width: 25%; text-align: center">
+        <RadzenTabsItem Text="Practice" Style="width: 25%; text-align: center"> 
         </RadzenTabsItem>
         <RadzenTabsItem Text="About Teacher" Style="width: 25%; text-align: center">
             <h4 class="fw-bold mt-3 mb-3">Lorem ipsum</h4>
@@ -103,9 +102,11 @@
     int score;
     bool recording = false;
     private string assessment;
+    private PronunciationAssessmentDTO? _assessmentDto;
 
     protected override async Task OnInitializedAsync()
     {
+        _assessmentDto = null;
         _keywords = new List<Keyword>();
 
         Guid.TryParse("998f1901-99f0-418e-82c1-c18ba368d295", out var guid);
@@ -135,18 +136,36 @@
             @<RadzenStack Gap="1.5rem">
                 <p>Practice your pronunciation of <b>@assessedKeyWord</b></p>
                 <p>Pronunciation Assessment: @assessment</p>
+                <div class="container-fluid d-flex flex-row justify-content-evenly">
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Secondary" Value="@(_assessmentDto != null ? _assessmentDto.Confidence : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(_assessmentDto != null ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium"><Template>Confidence</Template></RadzenProgressBarCircular>
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Danger" Value="@(_assessmentDto != null ? _assessmentDto.CompletenessScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(_assessmentDto != null ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                        <Template>Completeness</Template>
+                    </RadzenProgressBarCircular>
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Success" Value="@(_assessmentDto != null ? _assessmentDto.AccuracyScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(_assessmentDto != null ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                        <Template>Accuracy</Template>
+                    </RadzenProgressBarCircular>
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Light" Value="@(_assessmentDto != null ? _assessmentDto.FluencyScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(_assessmentDto != null ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                        <Template>Fluency</Template>
+                    </RadzenProgressBarCircular>
+                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="@(_assessmentDto != null ? _assessmentDto.PronScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(_assessmentDto != null ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                        <Template>Pronunciation</Template>
+                    </RadzenProgressBarCircular>
+                </div>
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
                     <RadzenStack Orientation="Orientation.Horizontal">
-                        <button id="recording-button" class="btn btn-primary" type="button" @onclick="() => RecordAudio(id, keyword)" style="background-color: darkorange; color: white;">
+                        @* <RadzenButton Text="Record" ButtonStyle="ButtonStyle.Primary" id="@string.Concat(id,"start")" Click="@RefreshAssessments"/> *@
+                        <button id="recording-button" class="btn btn-primary" type="button" @onclick="() => RecordAudio(id)" style="background-color: darkorange; color: white;">
                             RECORD
                         </button>
-                        <RadzenButton Text="Close" Click="() => CloseModal()" ButtonStyle="ButtonStyle.Light"/>
+                        <RadzenButton Text="Close" Click="@CloseModal" ButtonStyle="ButtonStyle.Light"/>
+                        <RadzenButton Text="Play Recording" ButtonStyle="ButtonStyle.Light" id="@string.Concat(id, "play")"/>
+                        <RadzenButton Text="Record" ButtonStyle="ButtonStyle.Primary" id="@string.Concat(id, "start")" Click="@RefreshAssessments"/>
                     </RadzenStack>
                 </RadzenStack>
             </RadzenStack>, new DialogOptions() {ShowClose = false});
     }
 
-    private async Task RecordAudio(Guid id, string keyword)
+    private async Task RecordAudio(Guid id)
     {
         await JS.InvokeVoidAsync("player.changeButton");
         await JS.InvokeVoidAsync("player.recording", dotnetRef, id);
@@ -170,16 +189,24 @@
             stream.Seek(0, SeekOrigin.Begin);
             var result = await SpeechService.CreatePronunciationAssessmentAsync(stream, keyword.Language, keyword.Content);
             score = (int) result.NBest[0].PronScore;
+            _assessmentDto = result.NBest.FirstOrDefault();
             Console.Write(score);
             assessment = score > 80 ? "Great Job" : "Try again";
             DialogService.Refresh();
         }
     }
 
+    private void RefreshAssessments()
+    {
+        _assessmentDto = null;
+        StateHasChanged();
+    }
+
     public async Task CloseModal()
     {
         assessment = "";
         DialogService.Close(false);
+        _assessmentDto = null;
     }
 
     public void Dispose()
