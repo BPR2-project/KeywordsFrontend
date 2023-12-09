@@ -16,12 +16,15 @@ builder.Services.AddScoped<ISpeechClient>(_ => new SpeechClient()
     { BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend") });
 builder.Services.AddScoped<IVideoClient>(_ => new VideoClient
     { BaseUrl = builder.Configuration.GetConnectionString("videosbackend") });
+builder.Services.AddScoped<ITextToSpeechClient>(_ => new TextToSpeechClient()
+    { BaseUrl = builder.Configuration.GetConnectionString("keywordsbackend") });
 
 // Add services to the container.
 builder.Services.AddScoped<IKeywordService, KeywordService>();
 builder.Services.AddScoped<IIndexerService, IndexerService>();
 builder.Services.AddScoped<ISwapVideoService, SwapVideoService>();
 builder.Services.AddScoped<ISpeechService, SpeechService>();
+builder.Services.AddScoped<ITextToSpeechService, TextToSpeechService>();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<DialogService>();
