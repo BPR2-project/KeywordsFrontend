@@ -1,26 +1,27 @@
 @page "/admin/video/{VideoId:guid}"
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
+@using ApiExceptionVideo = SwapVideos.API.Client.Generated.ApiException
 @inject IKeywordService _keywordService
 @inject ISwapVideoService _videoService
 @inject IIndexerService _indexerService
 @inject ITextToSpeechService TextToSpeechService
 <PageTitle>Video</PageTitle>
 
-@if (_video != null)
+@if (VideoLoaded)
 {
     <RadzenBreadCrumb Style="color: black !important">
-        <RadzenBreadCrumbItem Text="Videos" Path="/admin" />
+        <RadzenBreadCrumbItem Text="Videos" Path="/admin"/>
         <RadzenBreadCrumbItem Text="Video overview"/>
     </RadzenBreadCrumb>
-    <RadzenStack Orientation="Orientation.Vertical" Style="margin-top: 2%;" >
+    <RadzenStack Orientation="Orientation.Vertical" Style="margin-top: 2%;">
         <RadzenStack Orientation="Orientation.Vertical">
-            <RadzenStack  Orientation="Orientation.Horizontal">
+            <RadzenStack Orientation="Orientation.Horizontal">
                 <RadzenStack>
                     <div class="col-md-9">
                         <RadzenHtml>
-                            <video controls width="450" >
-                                <source src="@_video.VideoLink" type="video/mp4">
+                            <video controls width="450">
+                                <source src="@_video!.VideoLink" type="video/mp4">
                             </video>
                         </RadzenHtml>
                     </div>
@@ -28,8 +29,8 @@
                 <RadzenStack Orientation="Orientation.Horizontal" Style="width: 100%">
                     <RadzenCard Style="background-color:  #F1F5F9; width: 40%">
                         <RadzenStack Orientation="Orientation.Vertical">
-                            <RadzenText TextStyle="TextStyle.Body1"><b>Title: </b>@_video.Name</RadzenText>
-                            <RadzenText TextStyle="TextStyle.Body1"><b>Description: </b> @_video.Description</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body1"><b>Title: </b>@_video!.Name</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Body1"><b>Description: </b> @_video!.Description</RadzenText>
                         </RadzenStack>
                     </RadzenCard>
                     <RadzenStack Orientation="Orientation.Horizontal" Style="width: 60%" JustifyContent="JustifyContent.SpaceBetween">
@@ -47,42 +48,40 @@
                         </RadzenCard>
                     </RadzenStack>
                 </RadzenStack>
-                </RadzenStack>
-    </RadzenStack>
+            </RadzenStack>
+        </RadzenStack>
         <RadzenStack>
-            @if (_keywordsResponse != null)
-
+            @if (Indexed)
             {
-                <RadzenStack Style="width: 90%">
-                <RadzenStack Orientation="Orientation.Vertical">
-                            <RadzenText TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Style="margin-top: 1%">Keywords Panel</RadzenText>
-                            @if (_showOnlyPublished)
-                            {
-                                <RadzenStack Style="width: 100%" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround">
-                                    <RadzenCard Style="width:50%; background-color: white;" @onclick="() => _showOnlyPublished = false">
-                                        <RadzenText TextAlign="TextAlign.Center"> All keywords (@Keywords.Count)</RadzenText> 
-                                    </RadzenCard>
-                                    <RadzenCard Style="width: 50%; background-color: darkorange"  @onclick="() => _showOnlyPublished = true">
-                                        <RadzenText TextAlign="TextAlign.Center">Published Keywords (@TotalPublished) </RadzenText> 
-                                    </RadzenCard>
-                                </RadzenStack>
-                            
-                            }
-                            else
-                            {
-                                <RadzenStack Style="width: 100%" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround">
-                                    <RadzenCard Style="width: 50%; background-color: darkorange" @onclick="() => _showOnlyPublished = false">
-                                        <RadzenText TextAlign="TextAlign.Center"> All keywords (@Keywords.Count)</RadzenText> 
-                                    </RadzenCard>
-                                    <RadzenCard Style="width: 50%; background-color: white"  @onclick="() => _showOnlyPublished = true">
-                                        <RadzenText TextAlign="TextAlign.Center">Published Keywords (@TotalPublished) </RadzenText> 
-                                    </RadzenCard>
-                                </RadzenStack>
-                            }
-                           </RadzenStack>    
+                <RadzenStack>
+                    <RadzenStack Orientation="Orientation.Vertical">
+                        <RadzenText TextStyle="TextStyle.H3" TextAlign="TextAlign.Center" Style="margin-top: 1%">Keywords Panel</RadzenText>
+                        @if (_showOnlyPublished)
+                        {
+                            <RadzenStack Style="width: 100%" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround">
+                                <RadzenCard Style="width:50%; background-color: white;" @onclick="() => _showOnlyPublished = false">
+                                    <RadzenText TextAlign="TextAlign.Center"> All keywords (@Keywords.Count)</RadzenText>
+                                </RadzenCard>
+                                <RadzenCard Style="width: 50%; background-color: darkorange" @onclick="() => _showOnlyPublished = true">
+                                    <RadzenText TextAlign="TextAlign.Center">Published Keywords (@TotalPublished) </RadzenText>
+                                </RadzenCard>
+                            </RadzenStack>
+                        }
+                        else
+                        {
+                            <RadzenStack Style="width: 100%" Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround">
+                                <RadzenCard Style="width: 50%; background-color: darkorange" @onclick="() => _showOnlyPublished = false">
+                                    <RadzenText TextAlign="TextAlign.Center"> All keywords (@Keywords.Count)</RadzenText>
+                                </RadzenCard>
+                                <RadzenCard Style="width: 50%; background-color: white" @onclick="() => _showOnlyPublished = true">
+                                    <RadzenText TextAlign="TextAlign.Center">Published Keywords (@TotalPublished) </RadzenText>
+                                </RadzenCard>
+                            </RadzenStack>
+                        }
+                    </RadzenStack>
                     <RadzenStack Style="background-color:white; border-radius: 2%; height: 800px; overflow: auto" AlignItems="AlignItems.Center">
                         <RadzenStack Style="margin: 13px" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
-                            <RadzenStack  Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.Center" >
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.Center">
                                 @foreach (var keyword in ToShow)
                                 {
                                     <RadzenCard Style="background-color: #F1F5F9; width: 270px; height: 80px">
@@ -95,31 +94,42 @@
                             </RadzenStack>
                         </RadzenStack>
                     </RadzenStack>
-                    </RadzenStack>
-              
+                </RadzenStack>
             }
-            else if (_indexerProgress != null)
+            else if (IndexInProgress)
             {
-                <RadzenStack JustifyContent="JustifyContent.Center"  AlignItems="AlignItems.Center" Style="margin-top: 10%">
+                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="margin-top: 10%">
                     <RadzenText TextStyle="TextStyle.H6">Processing video</RadzenText>
-                    <RadzenText TextStyle="TextStyle.Body1"><strong>Status: </strong> @_indexerProgress.State</RadzenText>
                     <RadzenProgressBarCircular Style="height: 250px; width: 250px;" ProgressBarStyle="ProgressBarStyle.Primary" @bind-Value="@Progress" Mode="ProgressBarMode.Indeterminate"/>
+                </RadzenStack>
+            }
+            else if (IndexFailed)
+            {
+                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="margin-top: 10%">`
+                    <RadzenText> Index Failed </RadzenText>
                 </RadzenStack>
             }
             else
             {
-                <RadzenStack JustifyContent="JustifyContent.Center"  AlignItems="AlignItems.Center" Style="margin-top: 10%">`
-                <RadzenText> Oops - No keywords yet </RadzenText>
-                <RadzenButton Disabled="@_disableIndexButton" Text="Index" ButtonStyle="ButtonStyle.Primary" Click="IndexVideo"/>
+                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="margin-top: 10%">`
+                    <RadzenText> Oops - No keywords yet </RadzenText>
+                    <RadzenButton Disabled="@_disableIndexButton" Text="Index" ButtonStyle="ButtonStyle.Primary" Click="IndexVideo"/>
                 </RadzenStack>
             }
         </RadzenStack>
     </RadzenStack>
-    
-    }
+}
+else if (VideoNotFound)
+{
+    <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="margin-top: 10%">
+        <RadzenText TextStyle="TextStyle.H4">Video Not Found</RadzenText>
+    </RadzenStack> 
+}
 else
-{  <RadzenStack JustifyContent="JustifyContent.Center"  AlignItems="AlignItems.Center" Style="margin-top: 10%">
-   <RadzenProgressBarCircular Style="height: 300px; width: 300px;" ProgressBarStyle="ProgressBarStyle.Primary" Mode="ProgressBarMode.Indeterminate"/>
+{
+    <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="margin-top: 10%">
+       <RadzenText TextStyle="TextStyle.H4">Loading...</RadzenText>
+       <RadzenProgressBarCircular Style="height: 200px; width: 200px;" ProgressBarStyle="ProgressBarStyle.Primary" Mode="ProgressBarMode.Indeterminate"/>
    </RadzenStack>
 }
 
@@ -129,11 +139,18 @@ else
     public Guid VideoId { get; set; }
 
     private SwapVideos.API.Client.Generated.Video? _video;
+    private bool VideoLoaded => _video?.Id != null;
+    private bool VideoNotFound => _video is {Id: null};
+    
     IndexerProgress? _indexerProgress;
     private bool _disableIndexButton;
     private int pageSize = 50;
     
     private PaginatedKeywordsResponse? _keywordsResponse;
+    private bool Indexed => _keywordsResponse != null;
+    private bool IndexInProgress => _indexerProgress?.State is IndexerProgressState.Indexing or IndexerProgressState.ExtractingKeyPhrases;
+    private bool IndexFailed => _indexerProgress?.State is IndexerProgressState.Failed; 
+    
     private List<Keyword> Keywords => _keywordsResponse?.Keywords.OrderBy(x => x.Content).ToList() ?? new List<Keyword>();
     private List<Keyword> ToShow => _showOnlyPublished ? Keywords.Where(keyword => keyword.IsPublished).ToList() : Keywords;
     
@@ -159,7 +176,7 @@ else
     {
         set
         {
-            // Ignored
+            // Needed so it can be used by radzen component
         }
         get
         {
@@ -172,17 +189,18 @@ else
             return 99;
         }
     }
-    
+
     protected override async Task OnParametersSetAsync()
     {
         try
         {
             _video = await _videoService.GetVideoAsync(VideoId);
         }
-        catch (ApiException e) when (e.StatusCode == 404)
+        catch (ApiExceptionVideo e) when (e.StatusCode == 404)
         {
-            // Ignored
+            _video = new SwapVideos.API.Client.Generated.Video();
         }
+        
         await GetKeywordsAsync();
         await IndexerTrigger();
     }
@@ -195,21 +213,23 @@ else
             Size = pageSize,
             VideoId = VideoId
         };
+
         try
         {
             _keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-            _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
         }
         catch (ApiException e) when (e.StatusCode == 404)
         {
-            try
-            {
-                _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
-            }
-            catch (ApiException ex) when (ex.StatusCode == 404)
-            {
-                _indexerProgress = null;
-            }
+            _keywordsResponse = null;
+        }
+        
+        try
+        {
+            _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
+        }
+        catch (ApiException ex) when (ex.StatusCode == 404)
+        {
+            _indexerProgress = null;
         }
     }
 
@@ -239,9 +259,9 @@ else
 
     private async Task IndexVideo()
     {
-        if (_video?.Id != null)
+        if (VideoLoaded)
         {
-            await _indexerService.IndexVideoAsync(_video.Id.Value, _video.VideoLink);
+            await _indexerService.IndexVideoAsync(_video!.Id!.Value, _video.VideoLink);
             _disableIndexButton = true;
             _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
             await IndexerTrigger();
