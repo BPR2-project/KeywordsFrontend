@@ -12,11 +12,6 @@ public class KeywordService : IKeywordService
         _keywordClient = keywordClient;
     }
 
-    public async Task<Keyword> GetKeywordAsync(Guid keywordId)
-    {
-        return await _keywordClient.GetKeywordAsync(keywordId);
-    }
-
     public async Task<PaginatedKeywordsResponse> GetAllKeywordsByVideoIdAsync(PaginatedKeywordsRequest keywordsRequest)
     {
         return await _keywordClient.GetAllKeywordsByVideoIdAsync(keywordsRequest);

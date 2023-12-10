@@ -8,11 +8,9 @@ namespace Keywords.Services;
 
 public class SpeechService : ISpeechService
 {
-    private readonly ISpeechClient _speechClient;
     private readonly IConfiguration _configuration;
-    public SpeechService(ISpeechClient speechClient, IConfiguration configuration)
+    public SpeechService(IConfiguration configuration)
     {
-        _speechClient = speechClient;
         _configuration = configuration;
     }
 
@@ -21,7 +19,6 @@ public class SpeechService : ISpeechService
         byte[] bytes;
         using (var binaryReader = new BinaryReader(audioFile))
         {
-            
             bytes = binaryReader.ReadBytes((int)audioFile.Length);
             var audioContent = new ByteArrayContent(bytes);
 
