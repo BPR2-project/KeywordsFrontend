@@ -61,7 +61,7 @@
 </div>
 <RadzenTabs Style="min-height: 300px;">
     <Tabs>
-        <RadzenTabsItem Text="Overview" Style="width: 25%;">
+        <RadzenTabsItem Text="Overview" Style="width: 33.33%;">
             <span>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nibh risus, facilisis quis ipsum ut, posuere posuere sapien. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer aliquet porttitor enim, venenatis imperdiet diam fermentum a. In at purus sodales, tincidunt justo nec, condimentum magna. Sed scelerisque in libero vel rutrum. Nunc ac metus ac est finibus bibendum sit amet iaculis nisl. Nunc finibus fermentum nisi.
                 <br/>
@@ -72,25 +72,18 @@
                 Aenean eros nunc, posuere in lectus at, dictum condimentum erat. Cras risus ex, porttitor in massa in, efficitur pharetra est. In eget sem vitae arcu euismod fringilla sit amet vel justo. Pellentesque congue metus vel tincidunt rutrum. Vivamus nisi urna, porttitor a enim in, laoreet aliquet sem. Quisque luctus diam a risus posuere, quis vehicula tortor tincidunt. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum hendrerit sit amet sem non gravida.
             </span>
         </RadzenTabsItem>
-        <RadzenTabsItem Text="Keywords" Style="width: 25%; text-align: center">
-            <p>Click on the microphone next to the keywords to practice your pronunciation. Word being assessed: @assessedKeyWord | Pronunciation Score: @score</p>
+        <RadzenTabsItem Text="Keywords" Style="width: 33.33%; text-align: center">
+            <p>Click on a keyword to practice your pronunciation.</p>
             <div class="d-flex justify-content-between flex-wrap">
                 @foreach (var keyword in _keywords!)
                 {
                     <div class="d-inline-block mx-5 my-3">
-                        <span class="ps-2">@keyword.Content</span>
-                        @if (!string.IsNullOrEmpty(keyword.AudioLink))
-                        {
-                            <img src="audio.svg" alt="audio" @onclick="@(() => PlayAudio(keyword.AudioLink, keyword.Id))" id="@keyword.Id" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
-                        }
-                        <img src="mic.svg" alt="record" @onclick="@(() => OpenRecordingDialog(keyword.Id, keyword.Content))" Style="cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
+                        <span class="ps-2 keyword" @onclick="@(() => OpenRecordingDialog(keyword))" Style="cursor: pointer;">@keyword.Content</span>
                     </div>
                 }
             </div>
         </RadzenTabsItem>
-        <RadzenTabsItem Text="Practice" Style="width: 25%; text-align: center">
-        </RadzenTabsItem>
-        <RadzenTabsItem Text="About Teacher" Style="width: 25%; text-align: center">
+        <RadzenTabsItem Text="About Teacher" Style="width: 33.33%; text-align: center">
             <h4 class="fw-bold mt-3 mb-3">Lorem ipsum</h4>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nibh risus, facilisis quis ipsum ut, posuere posuere sapien. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer aliquet porttitor enim, venenatis imperdiet diam fermentum a. In at purus sodales, tincidunt justo nec, condimentum magna. Sed scelerisque in libero vel rutrum. Nunc ac metus ac est finibus bibendum sit amet iaculis nisl. Nunc finibus fermentum nisi.
         </RadzenTabsItem>
@@ -101,9 +94,9 @@
     private List<Keyword> _keywords;
     private DotNetObjectReference<SingleVideo>? dotnetRef;
     private bool _isAssessed;
-    string assessedKeyWord;
+    Keyword assessedKeyWord;
     int score;
-    bool recording = false;
+    bool recording;
     private string assessment;
     private PronunciationAssessmentDTO? _assessmentDto;
     private bool _disabled;
@@ -112,9 +105,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        recording = false;
         _disabled = true;
         _assessmentDto = null;
         _keywords = new List<Keyword>();
+        assessment = "";
 
         Guid.TryParse("212ced62-0fda-4d02-b4e9-6d9b76122780", out var guid);
         var response = await KeywordService.GetAllKeywordsByVideoIdAsync(new PaginatedKeywordsRequest()
@@ -136,38 +131,91 @@
         await JS.InvokeVoidAsync("player.play", source, id);
     }
 
-    private async Task OpenRecordingDialog(Guid id, string keyword)
+    private async Task OpenRecordingDialog(Keyword keyword)
     {
         assessedKeyWord = keyword;
         var result = await DialogService.OpenAsync("Pronunciation Practice", ds =>
-            @<RadzenStack Gap="1.5rem">
-                <p>Practice your pronunciation of <b>@assessedKeyWord</b></p>
-                <p>Pronunciation Assessment: @assessment</p>
-                <div class="container-fluid d-flex flex-row justify-content-evenly ">
-                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Secondary" Value="@(_assessmentDto != null ? _assessmentDto.Confidence * 100 : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
-                        <Template>Confidence</Template>
-                    </RadzenProgressBarCircular>
-                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Danger" Value="@(_assessmentDto != null ? _assessmentDto.CompletenessScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
-                        <Template>Completeness</Template>
-                    </RadzenProgressBarCircular>
-                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Success" Value="@(_assessmentDto != null ? _assessmentDto.AccuracyScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
-                        <Template>Accuracy</Template>
-                    </RadzenProgressBarCircular>
-                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Light" Value="@(_assessmentDto != null ? _assessmentDto.FluencyScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
-                        <Template>Fluency</Template>
-                    </RadzenProgressBarCircular>
-                    <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="@(_assessmentDto != null ? _assessmentDto.PronScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
-                        <Template>Pronunciation</Template>
-                    </RadzenProgressBarCircular>
+            @<RadzenStack >
+                <div class="d-flex align-items-start" style="margin-bottom: -5%">
+                    <p>Practice your pronunciation of <b>@assessedKeyWord.Content</b></p>
+                    <img src="audio.svg" alt="audio" @onclick="@(() => PlayAudio(assessedKeyWord.AudioLink, assessedKeyWord.Id))" id="@assessedKeyWord.Id" Style="margin-left: 1%; cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
+                </div>
+                <div style="margin-bottom: -5%">
+                    <p>Record yourself to get your pronunciation assessment.</p>
+                </div>
+                <div>
+                    <p>Once you click RECORD, you have 3 seconds to record your voice.</p>
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col d-flex justify-content-center">
+                        </div>
+                        <div class="col d-flex justify-content-center">
+                            <p>Total Score</p>
+                        </div>
+                        <div class="col d-flex justify-content-center">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col d-flex justify-content-center">
+                        </div>
+                        <div class="col d-flex justify-content-center">
+                            <RadzenProgressBarCircular Style="height: 80px; width: 80px;" ProgressBarStyle="ProgressBarStyle.Primary" Value="@(_assessmentDto != null ? _assessmentDto.PronScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                                <p style="font-size: 100px">@((int) _assessmentDto.PronScore)</p>
+                            </RadzenProgressBarCircular>
+                        </div>
+                        <div class="col d-flex justify-content-center">
+                        </div>
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row">
+                        <div class="col d-flex justify-content-center">
+                            <p>Accuracy</p>
+                        </div>
+                        <div class="col d-flex justify-content-center">
+                            <p>Fluency</p>
+                        </div>
+                        <div class="col d-flex justify-content-center">
+                            <p>Completeness</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col d-flex justify-content-center">
+                            <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="@(_assessmentDto != null ? _assessmentDto.CompletenessScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                                <Template>@string.Concat((int) _assessmentDto.CompletenessScore, "%")</Template>
+                            </RadzenProgressBarCircular>
+                        </div>
+                        <div class="col d-flex justify-content-center">
+                            <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="@(_assessmentDto != null ? _assessmentDto.AccuracyScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                                <Template>@string.Concat((int) _assessmentDto.AccuracyScore, "%")</Template>
+                            </RadzenProgressBarCircular>
+                        </div>
+                        <div class="col d-flex justify-content-center">
+                            <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="@(_assessmentDto != null ? _assessmentDto.FluencyScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
+                                <Template>@string.Concat((int) _assessmentDto.FluencyScore, "%")</Template>
+                            </RadzenProgressBarCircular>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center">
+                @if (assessment != "")
+                {
+                    <p style="font-size: 40px; margin-top: 4%">@assessment</p>
+                }
+                else
+                {
+                    <div style="height: 100px"></div>
+                }
                 </div>
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
                     <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenButton Text="Record" ButtonStyle="ButtonStyle.Primary" id="@string.Concat(id, "start")" Click="@(() => RefreshAssessments(id))"/>
-                        <RadzenButton Text="Play Recording" ButtonStyle="ButtonStyle.Light" id="@string.Concat(id, "play")" Disabled="@_disabled"/>
+                        <RadzenButton Text="Record" ButtonStyle="ButtonStyle.Primary" id="@string.Concat(keyword.Id, "start")" Click="@(() => RefreshAssessments(keyword.Id))"/>
+                        <RadzenButton Text="Play Recording" Style="background: #1E293B" id="@string.Concat(keyword.Id, "play")" Disabled="@_disabled"/>
                         <RadzenButton Text="Close" Click="@CloseModal" ButtonStyle="ButtonStyle.Light"/>
                     </RadzenStack>
                 </RadzenStack>
-            </RadzenStack>, new DialogOptions() { ShowClose = false });
+            </RadzenStack>, new DialogOptions() {ShowClose = false, Height = "605px"});
     }
 
     private async Task RecordAudio(Guid id)
@@ -181,7 +229,7 @@
         recording = false;
         var dataReference =
             await JS.InvokeAsync<IJSStreamReference>("fileDataStream", blobUrl);
-        
+
         using (var dataReferenceStream =
             await dataReference.OpenReadStreamAsync(maxAllowedSize: 10_000_000))
         {
@@ -192,10 +240,10 @@
             await dataReferenceStream.CopyToAsync(stream);
             stream.Seek(0, SeekOrigin.Begin);
             var result = await SpeechService.CreatePronunciationAssessmentAsync(stream, keyword.Language, keyword.Content);
-            score = (int)result.NBest[0].PronScore;
+            score = (int) result.NBest[0].PronScore;
             _assessmentDto = result.NBest.FirstOrDefault();
             _disabled = false;
-            assessment = score > 80 ? "Great Job" : "Try again";
+            assessment = score > 80 ? "Great Job!" : "Try Again";
             DialogService.Refresh();
         }
     }
@@ -217,6 +265,7 @@
         assessment = "";
         DialogService.Close(false);
         _assessmentDto = null;
+        _disabled = true;
     }
 
     public void Dispose()
