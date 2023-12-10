@@ -2,9 +2,9 @@
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
 @using ApiExceptionVideo = SwapVideos.API.Client.Generated.ApiException
-@inject IKeywordService _keywordService
-@inject ISwapVideoService _videoService
-@inject IIndexerService _indexerService
+@inject IKeywordService KeywordService
+@inject ISwapVideoService VideoService
+@inject IIndexerService IndexerService
 @inject ITextToSpeechService TextToSpeechService
 <PageTitle>Video</PageTitle>
 
@@ -144,7 +144,7 @@ else
     
     IndexerProgress? _indexerProgress;
     private bool _disableIndexButton;
-    private int pageSize = 50;
+    private int _pageSize = 50;
     
     private PaginatedKeywordsResponse? _keywordsResponse;
     private bool Indexed => _keywordsResponse != null;
@@ -194,7 +194,7 @@ else
     {
         try
         {
-            _video = await _videoService.GetVideoAsync(VideoId);
+            _video = await VideoService.GetVideoAsync(VideoId);
         }
         catch (ApiExceptionVideo e) when (e.StatusCode == 404)
         {
@@ -210,13 +210,13 @@ else
         var keywordsRequest = new PaginatedKeywordsRequest
         {
             Page = 0,
-            Size = pageSize,
+            Size = _pageSize,
             VideoId = VideoId
         };
 
         try
         {
-            _keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+            _keywordsResponse = await KeywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
         }
         catch (ApiException e) when (e.StatusCode == 404)
         {
@@ -225,7 +225,7 @@ else
         
         try
         {
-            _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
+            _indexerProgress = await IndexerService.GetIndexerProgressAsync(VideoId);
         }
         catch (ApiException ex) when (ex.StatusCode == 404)
         {
@@ -243,7 +243,7 @@ else
         using var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
         while (await periodicTimer.WaitForNextTickAsync())
         {
-            _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
+            _indexerProgress = await IndexerService.GetIndexerProgressAsync(VideoId);
             if (_indexerProgress.State is IndexerProgressState.Succeeded)
             {
                 await GetKeywordsAsync();
@@ -261,9 +261,9 @@ else
     {
         if (VideoLoaded)
         {
-            await _indexerService.IndexVideoAsync(_video!.Id!.Value, _video.VideoLink);
+            await IndexerService.IndexVideoAsync(_video!.Id!.Value, _video.VideoLink);
             _disableIndexButton = true;
-            _indexerProgress = await _indexerService.GetIndexerProgressAsync(VideoId);
+            _indexerProgress = await IndexerService.GetIndexerProgressAsync(VideoId);
             await IndexerTrigger();
         }
     }
@@ -272,14 +272,14 @@ else
     {
         var keywordId = keyword.Id;
         keyword.IsPublished = !keyword.IsPublished;
-        await _keywordService.PublishKeywordAsync(keywordId, keyword.IsPublished);
+        await KeywordService.PublishKeywordAsync(keywordId, keyword.IsPublished);
         var keywordsRequest = new PaginatedKeywordsRequest
         {
             Page = 0,
-            Size = pageSize,
+            Size = _pageSize,
             VideoId = VideoId
         };
-        _keywordsResponse = await _keywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
+        _keywordsResponse = await KeywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
         if (!keyword.IsPublished)
             return;
         await TextToSpeechService.CreateAudioForKeyword(keyword.Id);
