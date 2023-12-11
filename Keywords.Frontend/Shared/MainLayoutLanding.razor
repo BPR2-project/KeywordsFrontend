@@ -1,0 +1,16 @@
+﻿@inherits LayoutComponentBase
+<PageTitle>Bachelor Project 2023 - VIA University College</PageTitle>
+<RadzenLayout>
+    <RadzenHeader Style="background-color: #1E293B">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+            <RadzenLabel Text="Via Bachelor Project 2023" Style="color: darkorange;font-weight: 700; font-size: 25px; margin-left: 2%" />
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenBody>
+            @Body
+    </RadzenBody>
+</RadzenLayout>
+
+@code {
+    bool sidebar1Expanded = true;
+}
