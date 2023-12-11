@@ -17,7 +17,7 @@ public class SwapVideoService: ISwapVideoService
         return await _videoClient.GetVideoAsync(videoId);
     }
     
-    public async Task<PaginatedVideosResponse> GetVideoAsync(int? page, int size)
+    public async Task<PaginatedVideosResponse> GetAllVideosAsync(int? page, int size)
     {
         var paginatedVideosRequest = new PaginatedVideosRequest()
         {
