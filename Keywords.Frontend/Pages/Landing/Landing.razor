@@ -9,15 +9,14 @@
 </RadzenStack>
 </RadzenStack>
 
-
 @code {
     private void GoToStudentSite()
     {
-        NavigationManager.NavigateTo("https://localhost:7222/user");
+        NavigationManager.NavigateTo("/user");
         
     }
     private void GoToTeacherSite()
     {
-        NavigationManager.NavigateTo("https://localhost:7222/admin");
+        NavigationManager.NavigateTo("/admin");
     }
 }
