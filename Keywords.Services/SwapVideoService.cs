@@ -26,9 +26,4 @@ public class SwapVideoService: ISwapVideoService
         };
         return await _videoClient.GetAllVideosAsync(paginatedVideosRequest);
     }
-
-    public async Task<Video> TagVideoAsIndexedAsync(Guid videoId, bool isIndexed)
-    {
-        return await _videoClient.TagVideoAsIndexedAsync(videoId, isIndexed);
-    }
 }
