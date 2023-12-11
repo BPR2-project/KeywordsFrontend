@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
 <PageTitle>Keywords.Frontend</PageTitle>
 <RadzenLayout>
     <RadzenHeader>
@@ -9,7 +10,7 @@
     </RadzenHeader>
     <RadzenSidebar @bind-Expanded="@_sidebar1Expanded">
         <RadzenPanelMenu>
-            <RadzenPanelMenuItem Text="Home" Path="/" Icon="home"/>
+            <RadzenPanelMenuItem Text="Home" Click="NavigateToHome" Icon="home"/>
             <RadzenPanelMenuItem Text="Videos" Path="/admin"/>
         </RadzenPanelMenu>
     </RadzenSidebar>
@@ -27,4 +28,9 @@
 
 @code {
     bool _sidebar1Expanded;
+    
+    private void NavigateToHome()
+    {
+        NavigationManager.NavigateTo("/", true);
+    }
 }

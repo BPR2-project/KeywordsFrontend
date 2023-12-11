@@ -12,11 +12,11 @@
 @code {
     private void GoToStudentSite()
     {
-        NavigationManager.NavigateTo("/user");
+        NavigationManager.NavigateTo("/user", true);
         
     }
     private void GoToTeacherSite()
     {
-        NavigationManager.NavigateTo("/admin");
+        NavigationManager.NavigateTo("/admin", true);
     }
 }
