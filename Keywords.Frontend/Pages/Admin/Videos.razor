@@ -47,7 +47,7 @@
 
     private async Task<IEnumerable<SwapVideos.API.Client.Generated.Video>> GetAllVideosAsync(int? page, int size)
     {
-        var response = await _videoService.GetVideoAsync(page, size);
+        var response = await _videoService.GetAllVideosAsync(page, size);
         count = response.TotalAmount ?? 0;
         return response.Videos;
     }

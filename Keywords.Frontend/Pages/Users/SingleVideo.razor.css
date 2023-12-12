@@ -1,7 +1,18 @@
 .rz-tabview-nav .rz-tabview-selected a {
     text-align: center; !important;
 }
-
+.keyword{
+   
+}
 .keyword:hover {
-    color: #ff8c00;
+    /*color: #ff8c00;*/
+}
+
+.text-container{
+    text-align: center;
+    border-bottom: 1px solid white;
+}
+.text-container:hover{
+    border-bottom: 1px solid darkorange;
+    color: darkorange;    
 }

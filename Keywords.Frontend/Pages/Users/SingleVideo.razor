@@ -1,94 +1,112 @@
 @page "/user"
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
+@using SwapVideos.API.Client.Generated
 @inject IKeywordService KeywordService
 @inject IJSRuntime JS
 @inject ISpeechService SpeechService
 @inject DialogService DialogService
+@inject ISwapVideoService SwapVideoService
+@inject NavigationManager NavigationManager
 
-<div class="py-3 px-2 py-lg-4 px-lg-5" style="background-color:rgb(248 250 252);">
-    <RadzenBreadCrumb>
-        <RadzenBreadCrumbItem Text="Language Lessons"/>
-        <RadzenBreadCrumbItem Text="Module 1"/>
-        <RadzenBreadCrumbItem Text="Video Title"/>
-    </RadzenBreadCrumb>
-    <div class="mt-4 mt-lg-5 w-100">
-        <div class="mx-auto d-flex flex-column flex-lg-row justify-content-center">
-            <div class="me-0 me-lg-3 mb-3">
-                <h4 class="fw-bolder">Video title</h4>
-                <h6 class="mb-4">description</h6>
-                <div class="text-center rounded-3" style="aspect-ratio: 16/9; background-color: black; color: white; min-height: 400px;">
-                    <div class="d-flex flex-column justify-content-center align-items-center h-100">
-                        <RadzenText Text="Video lesson" TextStyle="TextStyle.H5" Style="color: white"/>
-                        <RadzenButton Text="Sign Up" ButtonType="ButtonType.Button" Style="background-color: darkorange; color: white;">Watch Now</RadzenButton>
+@if (_loading)
+{
+    <p>Loading..</p>
+}
+else
+{
+    <div class="py-3 px-2 py-lg-4 px-lg-5" style="background-color:rgb(248 250 252);">
+        <RadzenBreadCrumb>
+            <RadzenBreadCrumbItem Text="Language Lessons"/>
+            <RadzenBreadCrumbItem Text="Module 1"/>
+            <RadzenBreadCrumbItem Text="@_selectedVideo.Name"/>
+        </RadzenBreadCrumb>
+        <div class="mt-4 mt-lg-5 w-100">
+            <div class="mx-auto d-flex flex-column flex-lg-row justify-content-center">
+                <div class="mx-auto mx-lg-0 me-lg-3 mb-3">
+                    <h4 class="fw-bolder">@_selectedVideo.Name</h4>
+                    <h6 class="mb-4">@_selectedVideo.Description</h6>
+                    
+                    <video controls height="400px" class="rounded-3">
+                        <source src="@_selectedVideo!.VideoLink" type="video/mp4">
+                    </video>
+                    
+                </div>
+                <div class="ms-0 ms-lg-4 d-flex flex-column" style="min-width: 250px;">
+                    <h6 style="color: darkorange">Coming up next</h6>
+                    <h5 class="fw-bolder mb-4">Language Lessons</h5>
+                    <div class="d-none d-lg-block" style="max-height: 400px; overflow-y: scroll;">
+                        <RadzenStack Orientation="Orientation.Vertical">
+                            @for (int i = 0; i < _videos!.Count; i++)
+                            {
+                                var count = i;
+                                <div class="d-flex flex-row mb-3">
+                                    <div class="text-center rounded-3 d-block m" style="aspect-ratio: 16/9; background-color: black; color: white; height: 70px; cursor: pointer;" @onclick="@(() => ChangeVideo(_videos[count]))"></div>
+                                    <div class="d-flex flex-column ms-2">
+                                        <RadzenText TextStyle="TextStyle.Subtitle2" class="body-text">@_videos[count].Name</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.Caption">@_videos[count].Description</RadzenText>
+                                    </div>
+                                </div>
+                            }
+                        </RadzenStack>
                     </div>
-                </div>
-            </div>
-            <div class="ms-0 ms-lg-4 d-flex flex-column" style="min-width: 250px;">
-                <h6 style="color: darkorange">Coming up next</h6>
-                <h5 class="fw-bolder mb-4">Module: Title</h5>
-                <div class="d-none d-lg-block" style="max-height: 400px; overflow-y: scroll;">
-                    <RadzenStack Orientation="Orientation.Vertical">
-                        @for (int i = 0; i < 10; i++)
-                        {
-                            <div class="d-flex flex-row mb-3">
-                                <div class="text-center rounded-3 d-block m" style="aspect-ratio: 16/9; background-color: black; color: white; height: 70px; cursor: pointer;"></div>
-                                <div class="d-flex flex-column ms-2">
-                                    <RadzenText TextStyle="TextStyle.Subtitle2" class="body-text">Lesson</RadzenText>
-                                    <RadzenText TextStyle="TextStyle.Caption">Module </RadzenText>
-                                </div>
-                            </div>
-                        }
-                    </RadzenStack>
-                </div>
-                <div class="d-block d-lg-none mb-4" style="overflow-x: scroll;">
-                    <RadzenStack Orientation="Orientation.Horizontal">
-                        @for (int i = 0; i < 10; i++)
-                        {
-                            <div class="d-flex flex-row mb-3">
-                                <div class="text-center rounded-3 d-block m" style="aspect-ratio: 16/9; background-color: black; color: white; height: 70px; cursor: pointer;"></div>
-                                <div class="d-flex flex-column ms-2">
-                                    <RadzenText TextStyle="TextStyle.Subtitle2" class="body-text">Lesson</RadzenText>
-                                    <RadzenText TextStyle="TextStyle.Caption">Module</RadzenText>
-                                </div>
-                            </div>
-                        }
-                    </RadzenStack>
+                    <div class="d-block d-lg-none mb-4" style="overflow-x: scroll;">
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            @for (int i = 0; i < _videos!.Count; i++)
+                            {
+                                var count = i;
+                                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center">
+                                    <div class="text-center rounded-3" style="aspect-ratio: 16/9; background-color: black; color: white; height: 70px; cursor: pointer;" @onclick="@(() => ChangeVideo(_videos[count]))"></div>
+                                    <div>
+                                        <RadzenText TextStyle="TextStyle.Subtitle2" class="body-text">@_videos[count].Name</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.Caption">@_videos[count].Description</RadzenText>
+                                    </div>
+                                </RadzenStack>
+                            }
+                        </RadzenStack>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<RadzenTabs Style="min-height: 300px;">
-    <Tabs>
-        <RadzenTabsItem Text="Overview" Style="width: 33.33%;">
-            <span>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nibh risus, facilisis quis ipsum ut, posuere posuere sapien. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer aliquet porttitor enim, venenatis imperdiet diam fermentum a. In at purus sodales, tincidunt justo nec, condimentum magna. Sed scelerisque in libero vel rutrum. Nunc ac metus ac est finibus bibendum sit amet iaculis nisl. Nunc finibus fermentum nisi.
-                <br/>
-                <br/>
-                Nam iaculis ornare nunc quis tincidunt. Curabitur posuere sodales ex, at fringilla purus condimentum ut. Nullam rhoncus justo finibus vehicula mattis. Vestibulum sit amet erat quam. Vivamus in sapien in metus faucibus molestie. Donec ac convallis leo, id molestie elit. Mauris in augue a nisl tristique venenatis. Etiam ut hendrerit leo. Fusce sollicitudin suscipit dui ac vulputate. Nam tellus ligula, congue at diam id, sodales pretium diam. Vivamus suscipit pellentesque euismod.
-                <br/>
-                <br/>
-                Aenean eros nunc, posuere in lectus at, dictum condimentum erat. Cras risus ex, porttitor in massa in, efficitur pharetra est. In eget sem vitae arcu euismod fringilla sit amet vel justo. Pellentesque congue metus vel tincidunt rutrum. Vivamus nisi urna, porttitor a enim in, laoreet aliquet sem. Quisque luctus diam a risus posuere, quis vehicula tortor tincidunt. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum hendrerit sit amet sem non gravida.
-            </span>
-        </RadzenTabsItem>
-        <RadzenTabsItem Text="Keywords" Style="width: 33.33%; text-align: center">
-            <p>Click on a keyword to practice your pronunciation.</p>
-            <div class="d-flex justify-content-between flex-wrap">
-                @foreach (var keyword in _keywords)
+    <RadzenTabs Style="min-height: 300px;">
+        <Tabs>
+            <RadzenTabsItem Text="Overview" Style="width: 33.33%;">
+                <span>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nibh risus, facilisis quis ipsum ut, posuere posuere sapien. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer aliquet porttitor enim, venenatis imperdiet diam fermentum a. In at purus sodales, tincidunt justo nec, condimentum magna. Sed scelerisque in libero vel rutrum. Nunc ac metus ac est finibus bibendum sit amet iaculis nisl. Nunc finibus fermentum nisi.
+                    <br/>
+                    <br/>
+                    Nam iaculis ornare nunc quis tincidunt. Curabitur posuere sodales ex, at fringilla purus condimentum ut. Nullam rhoncus justo finibus vehicula mattis. Vestibulum sit amet erat quam. Vivamus in sapien in metus faucibus molestie. Donec ac convallis leo, id molestie elit. Mauris in augue a nisl tristique venenatis. Etiam ut hendrerit leo. Fusce sollicitudin suscipit dui ac vulputate. Nam tellus ligula, congue at diam id, sodales pretium diam. Vivamus suscipit pellentesque euismod.
+                    <br/>
+                    <br/>
+                    Aenean eros nunc, posuere in lectus at, dictum condimentum erat. Cras risus ex, porttitor in massa in, efficitur pharetra est. In eget sem vitae arcu euismod fringilla sit amet vel justo. Pellentesque congue metus vel tincidunt rutrum. Vivamus nisi urna, porttitor a enim in, laoreet aliquet sem. Quisque luctus diam a risus posuere, quis vehicula tortor tincidunt. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum hendrerit sit amet sem non gravida.
+                </span>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Keywords" Style="width: 33.33%; text-align: center">
+                @if (_keywords!.Count == 0)
                 {
-                    <div class="d-inline-block mx-5 my-3">
-                        <span class="ps-2 keyword" @onclick="@(() => OpenRecordingDialog(keyword))" Style="cursor: pointer;">@keyword.Content</span>
-                    </div>
+                    <p>Now keywords available</p>
                 }
-            </div>
-        </RadzenTabsItem>
-        <RadzenTabsItem Text="About Teacher" Style="width: 33.33%; text-align: center">
-            <h4 class="fw-bold mt-3 mb-3">Lorem ipsum</h4>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nibh risus, facilisis quis ipsum ut, posuere posuere sapien. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer aliquet porttitor enim, venenatis imperdiet diam fermentum a. In at purus sodales, tincidunt justo nec, condimentum magna. Sed scelerisque in libero vel rutrum. Nunc ac metus ac est finibus bibendum sit amet iaculis nisl. Nunc finibus fermentum nisi.
-        </RadzenTabsItem>
-    </Tabs>
-</RadzenTabs>
+                else
+                {
+                    <p>Click on a keyword to practice your pronunciation.</p>
+                }
+                <div class="d-flex justify-content-evenly flex-wrap" style="max-height: 400px; overflow-y: scroll; ">
+                    @foreach (var keyword in _keywords)
+                    {
+                        <div class="text-container mx-4 my-3" style="width: 10%;">
+                            <span class="keyword text-center d-inline-block" @onclick="@(() => OpenRecordingDialog(keyword))" Style="cursor: pointer;">@keyword.Content</span>
+                        </div>
+                    }
+                </div>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="About Teacher" Style="width: 33.33%; text-align: center">
+                <h4 class="fw-bold mt-3 mb-3">Lorem ipsum</h4>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras nibh risus, facilisis quis ipsum ut, posuere posuere sapien. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer aliquet porttitor enim, venenatis imperdiet diam fermentum a. In at purus sodales, tincidunt justo nec, condimentum magna. Sed scelerisque in libero vel rutrum. Nunc ac metus ac est finibus bibendum sit amet iaculis nisl. Nunc finibus fermentum nisi.
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+}
 
 @code {
     private List<Keyword>? _keywords;
@@ -100,25 +118,34 @@
     private PronunciationAssessmentDTO? _assessmentDto;
     private bool _disabled;
     private bool _jsInitialized;
+    private List<Video>? _videos;
+    private Video? _selectedVideo;
+    private bool _loading;
 
 
     protected override async Task OnInitializedAsync()
     {
+        _loading = true;
         _recording = false;
         _disabled = true;
         _assessmentDto = null;
         _keywords = new List<Keyword>();
+        _videos = new List<Video>();
         _assessment = "";
 
-        Guid.TryParse("212ced62-0fda-4d02-b4e9-6d9b76122780", out var guid);
-        var response = await KeywordService.GetAllKeywordsByVideoIdAsync(new PaginatedKeywordsRequest()
-        {
-            Page = 0,
-            Size = Int32.MaxValue,
-            VideoId = guid,
-            Published = true
-        });
-        _keywords = response.Keywords;
+        var videosResponse = await SwapVideoService.GetAllVideosAsync(0, Int32.MaxValue);
+        _videos = videosResponse.Videos.ToList();
+
+        _selectedVideo = _videos.FirstOrDefault();
+
+        if (_selectedVideo == null)
+            return;
+
+        _videos = _videos.Where(a => a.Id != _selectedVideo.Id).ToList();
+
+        await LoadKeywords(_selectedVideo.Id.Value);
+
+        _loading = false;
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -136,7 +163,7 @@
     {
         _assessedKeyWord = keyword;
         await DialogService.OpenAsync("Pronunciation Practice", ds =>
-            @<RadzenStack >
+            @<RadzenStack>
                 <div class="d-flex align-items-start" style="margin-bottom: -5%">
                     <p>Practice your pronunciation of <b>@_assessedKeyWord.Content</b></p>
                     <img src="audio.svg" alt="audio" @onclick="@(() => PlayAudio(_assessedKeyWord.AudioLink, _assessedKeyWord.Id))" id="@_assessedKeyWord.Id" Style="margin-left: 1%; cursor: pointer; filter: invert(4%) sepia(4%) saturate(7492%) hue-rotate(169deg) brightness(95%) contrast(77%)"/>
@@ -184,39 +211,39 @@
                     <div class="row">
                         <div class="col d-flex justify-content-center">
                             <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="@(_assessmentDto != null ? _assessmentDto.CompletenessScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!_recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
-                                <Template>@string.Concat((int) _assessmentDto.CompletenessScore, "%")</Template>
+                                <Template>@string.Concat((int)_assessmentDto.CompletenessScore, "%")</Template>
                             </RadzenProgressBarCircular>
                         </div>
                         <div class="col d-flex justify-content-center">
                             <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="@(_assessmentDto != null ? _assessmentDto.AccuracyScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!_recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
-                                <Template>@string.Concat((int) _assessmentDto.AccuracyScore, "%")</Template>
+                                <Template>@string.Concat((int)_assessmentDto.AccuracyScore, "%")</Template>
                             </RadzenProgressBarCircular>
                         </div>
                         <div class="col d-flex justify-content-center">
                             <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="@(_assessmentDto != null ? _assessmentDto.FluencyScore : 100)" ShowValue="@(_assessmentDto != null)" Mode="@(!_recording ? ProgressBarMode.Determinate : ProgressBarMode.Indeterminate)" Size="ProgressBarCircularSize.Medium">
-                                <Template>@string.Concat((int) _assessmentDto.FluencyScore, "%")</Template>
+                                <Template>@string.Concat((int)_assessmentDto.FluencyScore, "%")</Template>
                             </RadzenProgressBarCircular>
                         </div>
                     </div>
                 </div>
                 <div class="d-flex justify-content-center">
-                @if (_assessment != "")
-                {
-                    <p style="font-size: 40px; margin-top: 4%">@_assessment</p>
-                }
-                else
-                {
-                    <div style="height: 100px"></div>
-                }
+                    @if (_assessment != "")
+                    {
+                        <p style="font-size: 40px; margin-top: 4%">@_assessment</p>
+                    }
+                    else
+                    {
+                        <div style="height: 100px"></div>
+                    }
                 </div>
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
                     <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenButton Text="Record" ButtonStyle="ButtonStyle.Primary" id="@string.Concat(keyword.Id, "start")" Click="@(() => RefreshAssessments(keyword.Id))"/>
-                        <RadzenButton Text="Play Recording" Style="background: #1E293B" id="@string.Concat(keyword.Id, "play")" Disabled="@_disabled"/>
+                        <RadzenButton Text="Record" ButtonStyle="ButtonStyle.Primary" id="@string.Concat(keyword.Id, "start")" Disabled="@_recording" Click="@(() => RefreshAssessments(keyword.Id))"/>
+                        <RadzenButton Text="Play Recording" Style="background: #1E293B" id="@string.Concat(keyword.Id, "play")" Disabled="@(_disabled)"/>
                         <RadzenButton Text="Close" Click="@CloseModal" ButtonStyle="ButtonStyle.Light"/>
                     </RadzenStack>
                 </RadzenStack>
-            </RadzenStack>, new DialogOptions() {ShowClose = false, Height = "605px"});
+            </RadzenStack>, new DialogOptions() { ShowClose = false, Height = "605px" });
     }
 
     private async Task RecordAudio(Guid id)
@@ -236,10 +263,10 @@
         {
             if (_keywords == null)
                 return;
-            
+
             var keyword = _keywords.FirstOrDefault(a => a.Id == id);
-            
-            if(keyword == null)
+
+            if (keyword == null)
                 return;
 
             var stream = new MemoryStream();
@@ -247,7 +274,7 @@
             await dataReferenceStream.CopyToAsync(stream);
             stream.Seek(0, SeekOrigin.Begin);
             var result = await SpeechService.CreatePronunciationAssessmentAsync(stream, keyword.Language, keyword.Content);
-            _score = (int) result.NBest[0].PronScore;
+            _score = (int)result.NBest[0].PronScore;
             _assessmentDto = result.NBest.FirstOrDefault();
             _disabled = false;
             _assessment = _score > 80 ? "Great Job!" : "Try Again";
@@ -277,8 +304,38 @@
 
     public void Dispose()
     {
-        if (_dotnetRef != null) 
+        if (_dotnetRef != null)
             _dotnetRef.Dispose();
     }
 
+    private async Task ChangeVideo(Video video)
+    {
+        _selectedVideo = video;
+        await LoadKeywords(video.Id.Value);
+        StateHasChanged();
+    }
+
+    private async Task LoadKeywords(Guid selectedVideo)
+    {
+        var response = new PaginatedKeywordsResponse();
+        try
+        {
+            response = await KeywordService.GetAllKeywordsByVideoIdAsync(new PaginatedKeywordsRequest()
+            {
+                Page = 0,
+                Size = Int32.MaxValue,
+                VideoId = selectedVideo,
+                Published = true
+            });
+            
+            _keywords = response.Keywords;
+        }
+        catch (Exception e)
+        {
+            
+        }
+
+        if (response.Keywords == null)
+            _keywords = new List<Keyword>();
+    }
 }
