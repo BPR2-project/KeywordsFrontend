@@ -145,7 +145,7 @@ else
     
     IndexerProgress? _indexerProgress;
     private bool _disableIndexButton;
-    private int _pageSize = 50;
+    private readonly int _pageSize = 50;
     
     private PaginatedKeywordsResponse? _keywordsResponse;
     private bool Indexed => _keywordsResponse != null;
@@ -157,6 +157,8 @@ else
     
     private bool _showOnlyPublished;
     private int TotalPublished => Keywords.Count(x => x.IsPublished);
+    
+    private Task? _triggerTask;
     
     private string State
     {
@@ -202,8 +204,9 @@ else
             _video = new SwapVideos.API.Client.Generated.Video();
         }
         
+        await InvokeAsync(StateHasChanged);
         await GetKeywordsAsync();
-        await IndexerTrigger();
+        _triggerTask ??= IndexerTrigger();
     }
     
     private async Task GetKeywordsAsync()
@@ -253,8 +256,10 @@ else
             }
 
             await InvokeAsync(StateHasChanged);
-            if (_indexerProgress.State is not IndexerProgressState.Failed) continue;
-            break;
+            if (_indexerProgress.State is IndexerProgressState.Failed)
+            {
+                break;
+            }
         }
     }
 
@@ -265,7 +270,7 @@ else
             await IndexerService.IndexVideoAsync(_video!.Id!.Value, _video.VideoLink);
             _disableIndexButton = true;
             _indexerProgress = await IndexerService.GetIndexerProgressAsync(VideoId);
-            await IndexerTrigger();
+            _triggerTask ??= IndexerTrigger();
         }
     }
 
