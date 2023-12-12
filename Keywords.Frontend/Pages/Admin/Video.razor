@@ -204,7 +204,6 @@ else
             _video = new SwapVideos.API.Client.Generated.Video();
         }
         
-        await InvokeAsync(StateHasChanged);
         await GetKeywordsAsync();
         _triggerTask ??= IndexerTrigger();
     }
