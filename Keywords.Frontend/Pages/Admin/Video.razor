@@ -241,6 +241,7 @@ else
     {
         if (_keywordsResponse != null || _indexerProgress == null)
         {
+            _triggerTask = null;
             return;
         }
         await InvokeAsync(StateHasChanged);
@@ -261,6 +262,7 @@ else
                 break;
             }
         }
+        _triggerTask = null;
     }
 
     private async Task IndexVideo()
