@@ -42,7 +42,7 @@
 
     private void ViewVideoDetails(Guid? videoId)
     {
-        Navigation.NavigateTo($"/admin/video/{videoId}");
+        Navigation.NavigateTo($"/admin/videos/{videoId}", true);
     }
 
     private async Task<IEnumerable<SwapVideos.API.Client.Generated.Video>> GetAllVideosAsync(int? page, int size)

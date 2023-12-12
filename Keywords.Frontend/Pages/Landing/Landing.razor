@@ -1,0 +1,22 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager
+<RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="margin-top: 5%">
+<RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Gap="2rem">
+    <RadzenText TextStyle="TextStyle.H2">Swap Keywords Service</RadzenText>
+    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Style="margin-top: 5%"></RadzenStack>
+    <RadzenButton Click="_ => GoToStudentSite()" Style="width:50%">Go To Student's site</RadzenButton>
+    <RadzenButton Click="_ => GoToTeacherSite()" Style="width:50%">Go To Teacher's site</RadzenButton>
+</RadzenStack>
+</RadzenStack>
+
+@code {
+    private void GoToStudentSite()
+    {
+        NavigationManager.NavigateTo("/user", true);
+        
+    }
+    private void GoToTeacherSite()
+    {
+        NavigationManager.NavigateTo("/admin", true);
+    }
+}

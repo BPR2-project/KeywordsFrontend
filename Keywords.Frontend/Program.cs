@@ -47,7 +47,8 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapBlazorHub();
-app.MapFallbackToPage("/Users/Shared/_Host");
+app.MapFallbackToPage("/Landing/Shared/_Host");
+app.MapFallbackToPage("/user/{**slug}","/Users/Shared/_Host");
 app.MapFallbackToPage("/admin/{**slug}","/Admin/Shared/_Host");
 
 

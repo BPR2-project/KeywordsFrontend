@@ -1,4 +1,4 @@
-@page "/admin/video/{VideoId:guid}"
+@page "/admin/videos/{VideoId:guid}"
 @using Keywords.Services.Interfaces
 @using Keywords.API.Client.Generated
 @using ApiExceptionVideo = SwapVideos.API.Client.Generated.ApiException
@@ -106,14 +106,15 @@
             else if (IndexFailed)
             {
                 <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="margin-top: 10%">`
-                    <RadzenText> Index Failed </RadzenText>
+                    <RadzenText> Try again </RadzenText>
+                    <RadzenButton Click="IndexVideo">Re-Index Video</RadzenButton>
                 </RadzenStack>
             }
             else
             {
                 <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="margin-top: 10%">`
                     <RadzenText> Oops - No keywords yet </RadzenText>
-                    <RadzenButton Disabled="@_disableIndexButton" Text="Index" ButtonStyle="ButtonStyle.Primary" Click="IndexVideo"/>
+                    <RadzenButton Disabled="@_disableIndexButton" Text="Videos" ButtonStyle="ButtonStyle.Primary" Click="IndexVideo"/>
                 </RadzenStack>
             }
         </RadzenStack>

@@ -31,4 +31,9 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <AdditionalFiles Include="Pages\Landing\Shared\_Host.cshtml" />
+      <AdditionalFiles Include="Pages\Landing\Shared\_Layout.cshtml" />
+    </ItemGroup>
+
 </Project>
