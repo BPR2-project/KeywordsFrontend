@@ -6,6 +6,8 @@
 @inject ISwapVideoService VideoService
 @inject IIndexerService IndexerService
 @inject ITextToSpeechService TextToSpeechService
+@inject DialogService DialogService
+
 <PageTitle>Video</PageTitle>
 
 @if (VideoLoaded)
@@ -277,9 +279,20 @@ else
 
     private async Task ChangePublishState(Keyword keyword)
     {
-        var keywordId = keyword.Id;
-        keyword.IsPublished = !keyword.IsPublished;
-        await KeywordService.PublishKeywordAsync(keywordId, keyword.IsPublished);
+        try
+        {
+            var keywordId = keyword.Id;
+            keyword.IsPublished = !keyword.IsPublished;
+            if (keyword.IsPublished)
+                await TextToSpeechService.CreateAudioForKeyword(keyword.Id);
+            
+            await KeywordService.PublishKeywordAsync(keywordId, keyword.IsPublished);
+        }
+        catch (ApiException e) when (e.StatusCode == 401 || e.StatusCode == 403 || e.StatusCode == 404)
+        {
+            await DialogService.Alert("An error occured while creating the audio! It may be that your tts subscription expired!", "Oopsie", new AlertOptions() { OkButtonText = "Ok" });
+        }
+
         var keywordsRequest = new PaginatedKeywordsRequest
         {
             Page = 0,
@@ -287,8 +300,5 @@ else
             VideoId = VideoId
         };
         _keywordsResponse = await KeywordService.GetAllKeywordsByVideoIdAsync(keywordsRequest);
-        if (!keyword.IsPublished)
-            return;
-        await TextToSpeechService.CreateAudioForKeyword(keyword.Id);
     }
 }
